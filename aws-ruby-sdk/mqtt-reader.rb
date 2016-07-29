@@ -2,12 +2,12 @@ require 'mqtt'
 require 'resolv-replace'
 require 'json'
 
-@client =MQTT::Client.connect(host: "a15ipmbgzhr3uc.iot.ap-northeast-1.amazonaws.com",
-                     port: 8883,
-                     ssl: true,
-                     cert_file: "/home/pi/certs/certificate.pem.crt",
-                     key_file: "/home/pi/certs/private.pem.key",
-                     ca_file: "/home/pi/certs/root-CA.crt")
+@client = MQTT::Client.connect(host: "a15ipmbgzhr3uc.iot.ap-northeast-1.amazonaws.com",
+                               port: 8883,
+                               ssl: true,
+                               cert_file: "/home/pi/certs/certificate.pem.crt",
+                               key_file: "/home/pi/certs/private.pem.key",
+                               ca_file: "/home/pi/certs/root-CA.crt")
 
 ##### TMP variable
 @topics_listen = ['$aws/things/MyRasPi2/shadow/update/delta', '$aws/things/MyRasPi2/shadow/update/documents']
