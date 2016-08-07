@@ -2,14 +2,12 @@ $LOAD_PATH << '../lib'
 
 require "mqtt_share_lib"
 
-cli = MqttShareLib::SharedClient.new(host: "a15ipmbgzhr3uc.iot.ap-northeast-1.amazonaws.com",
+cli = MqttShareLib::ShxoaredClient.new(host: "a15ipmbgzhr3uc.iot.ap-northeast-1.amazonaws.com",
                                      port: 8883,
                                      ssl: true,
                                      cert_file: "/Users/Pierre/certs/certificate.pem.crt",
                                      key_file: "/Users/Pierre/certs/private.pem.key",
                                      ca_file: "/Users/Pierre/certs/root-CA.crt")
-
-
 cli.connect
 
 p "Client : #{cli}"

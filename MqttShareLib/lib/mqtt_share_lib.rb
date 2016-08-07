@@ -1,19 +1,29 @@
 module MqttShareLib
   extend self
-  
+
+  ### Return the adapter selected for the module with either a pre-setted value or a default value
   def adapter
     return @adapter if @adapter
+    ### Calling the setter method with the default symbol 'ruby_mqtt_adapter' and return it.
     self.adapter = :ruby_mqtt_adapter
     @adapter
   end
-  
+
+
+  ### The setter of the module's adapter attributes
   def adapter=(adapter_lib)
     case adapter_lib
     when Symbol, String
-      require"adapters/#{adapter_lib}"
-      @adapter = MqttShareLib::Adapters.const_get("#{adapter_lib.to_s.capitalize}")
+      begin
+        require "adapters/#{adapter_lib}"
+      rescue LoadError
+        raise "LoadError: Could find adapters for the lib #{adapter_lib}"
+        exit
+      end
+      @adapter = Adapters.const_get("#{adapter_lib.to_s.capitalize}")
+#      @adapter = MqttShareLib::Adapters.const_get("#{adapter_lib.to_s.capitalize}")
     else
-      raise "Missing client adapters for the lib #{adapter_lib}"
+      raise "TypeError: Library name should be a String or Symbol"
     end
   end
 
@@ -31,7 +41,7 @@ module MqttShareLib
 
     ### @on_'event' contains the callback's [block, Proc, lambda] that should be called when 'event' is catched
     ### Callbacks should be define in the upper class (ex. MqqtCore)
-    ### Callback shoudlbe called by some (private) handlers define in the third party librairy
+    ### Callback shoudl be called by some (private) handlers define in the third party librairy
     
     attr_accessor :on_connect
     attr_accessor :on_disconnet
@@ -57,14 +67,38 @@ module MqttShareLib
       @adapter.connect(@client, *args, &block)
     end
     
-    def create_client(*args)
-      @adapter.create_client(*args)
-    end
-
     def publish(topic, payload='', retain=false, qos=0)
       @adapter.publish(@client, topic, payload, retain, qos)
     end
 
+    def loop_start 
+      @thread = @adapter.loop_start(@client)
+    end
+
+    def loop_stop
+      @adapter.loop_stop(@thread)
+    end
+
+    def loop_forever
+      @adapter.loop_forever(@client)
+    end
+
+    def mqtt_loop
+      @adapter.loop(@client)
+    end
+
+    def loop_read
+      @adapter.loop_read(@client)
+    end
+
+    def loop_write
+      @adapter.loop_write(@client)
+    end
+    
+    def loop_misc
+      @adapter.loop_misc(@client)
+    end
+    
     def get(topic=nil, &block)
       @adapter.get(@client, topic, &block)
     end
@@ -99,7 +133,7 @@ module MqttShareLib
 
 
     ### The following attributes should exists in every MQTT third party librairy.
-    ### They are necessary (or really usefull/common) for the establishement of the connection and/or the basic Mqtt actions.
+    ### They are necessary (or really usefull and common) for the establishement of the connection and/or the basic Mqtt actions.
     ### The setter directely change the third party client value when the getter remote the actual SharedClient instance's attribute value
     def host
       @client.host
@@ -132,9 +166,9 @@ module MqttShareLib
     def on_test=(on_test)
       @adapter.on_test = on_test
     end
-    
-    def on_message
-      @adapter.on_message = self.on_message
+
+    def on_message=(callback)
+      @adapter.set_on_message(@client, callback)
     end
     
     def on_connect

@@ -1,4 +1,4 @@
-$LOAD_PATH << '../lib'
+$LOAD_PATH << '~/IoT_raspberry_pi/MqttShareLib/lib'
 
 require "mqtt_share_lib"
 
@@ -10,13 +10,6 @@ cli = MqttShareLib::SharedClient.new(host: "a15ipmbgzhr3uc.iot.ap-northeast-1.am
                                      key_file: "/Users/Pierre/certs/private.pem.key",
                                      ca_file: "/Users/Pierre/certs/root-CA.crt")
 
-p = Proc.new do
-  p " Hi, I AM THE CALLBACK IMPLEMENTATION"
-end
-
-cli.on_test = p
-
-cli.connect
 
 cli2 = MqttShareLib::SharedClient.new
 cli2.host = "a15ipmbgzhr3uc.iot.ap-northeast-1.amazonaws.com"
@@ -27,10 +20,35 @@ ca_file = "/Users/Pierre/certs/root-CA.crt"
 cli2.set_tls_ssl_context(ca_file, cert_file, key_file)
 
 
+p = Proc.new do |message|
+  p " Client1 catch message event"
+  p "--- Topic: #{message.topic}"
+  p "--- Payload: #{message.payload}"
+end
+
+
+
+p2 = Proc.new do |message|
+  p " Client2 catch message event"
+  p "--- Topic: #{message.topic}"
+  p "--- Payload: #{message.payload}"
+end
+
+cli2.on_message = p2
+cli.on_message = p
+
+cli.connect
 cli2.connect
 
+
+cli.subscribe("topic_2")
+cli2.subscribe("topic_1")
+
+sleep 1
 cli.publish("topic_1", "Hello There!")
 cli2.publish("topic_2", "Hi there I am client 2")
+
+sleep 1
 
 cli2.disconnect
 cli.disconnect
