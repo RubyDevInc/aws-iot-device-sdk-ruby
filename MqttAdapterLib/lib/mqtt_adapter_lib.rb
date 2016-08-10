@@ -1,4 +1,4 @@
-module MqttShareLib
+module MqttAdapterLib
   extend self
 
   ### Return the adapter selected for the module with either a pre-setted value or a default value
@@ -21,13 +21,13 @@ module MqttShareLib
         exit
       end
       @adapter = Adapters.const_get("#{adapter_lib.to_s.capitalize}")
-#      @adapter = MqttShareLib::Adapters.const_get("#{adapter_lib.to_s.capitalize}")
+    #      @adapter = MqttShareLib::Adapters.const_get("#{adapter_lib.to_s.capitalize}")
     else
       raise "TypeError: Library name should be a String or Symbol"
     end
   end
-
-  class SharedClient
+  
+  class MqttAdapter
     # Restrict access to the base client
     # attr_accessor :client
 
@@ -36,43 +36,30 @@ module MqttShareLib
     ### @adapter default value is MqttShareLib::Adapters::Ruby_mqtt_adapter
     attr_accessor :adapter
 
-    # A example function used only to test the callback calling stack.
-    attr_accessor :on_test
-
     ### @on_'event' contains the callback's [block, Proc, lambda] that should be called when 'event' is catched
     ### Callbacks should be define in the upper class (ex. MqqtCore)
     ### Callback shoudl be called by some (private) handlers define in the third party librairy
     
-    attr_accessor :on_connect
-    attr_accessor :on_disconnet
-    attr_accessor :on_publish
-    attr_accessor :on_subscribe
-    attr_accessor :on_unbscribe
-    attr_accessor :on_message
-
-
     ### On instanciation of a SharedClient, the client adapter is set as the previously define module adapter
     ### The client is then initialize with the client type of the third librairy of the adapter.
     ### @client default type is MQTT::Client
     def initialize(*args)
-      @adapter = ::MqttShareLib.adapter
-      @client = adapter.create_client(*args)
+      @adapter = ::MqttAdapterLib.adapter.new(*args)
     end
-
-
+    
     ### The following method represent the basics common MQTT actions.
     ### As possible, they should be implemented in the third party librairy
     ### If not, the adpater should implement them or throw and excpetion
     def connect(*args, &block)
-      @adapter.connect(@client, *args, &block)
+      @adapter.connect( *args, &block)
     end
     
     def publish(topic, payload='', retain=false, qos=0)
-      @adapter.publish(@client, topic, payload, retain, qos)
+      @adapter.publish( topic, payload, retain, qos)
     end
 
     def loop_start 
-      @thread = @adapter.loop_start(@client)
+      @thread = @adapter.loop_start
     end
 
     def loop_stop
@@ -80,55 +67,55 @@ module MqttShareLib
     end
 
     def loop_forever
-      @adapter.loop_forever(@client)
+      @adapter.loop_forever
     end
 
     def mqtt_loop
-      @adapter.loop(@client)
+      @adapter.loop
     end
 
     def loop_read
-      @adapter.loop_read(@client)
+      @adapter.loop_read
     end
 
     def loop_write
-      @adapter.loop_write(@client)
+      @adapter.loop_write
     end
     
     def loop_misc
-      @adapter.loop_misc(@client)
+      @adapter.loop_misc
     end
     
     def get(topic=nil, &block)
-      @adapter.get(@client, topic, &block)
+      @adapter.get( topic, &block)
     end
     
     def get_packet(topic=nil, &block)
-      @adapter.get_packet(@client, topic, &block)
+      @adapter.get_packet( topic, &block)
     end
     
     def generate_client_id
-      @adapter.generate_client_id(@client)
+      @adapter.generate_client_id
     end
     
     def disconnect(send_msg=true)
-      @adapter.disconnect(@client, send_msg)
+      @adapter.disconnect( send_msg)
     end
     
     def connected?
-      @adapter.connected?(@client)
+      @adapter.connected?
     end
     
     def subscribe(*topics)
-      @adapter.subscribe(@client, *topics)
+      @adapter.subscribe( *topics)
     end
     
     def unsubscribe(*topics)
-      @adapter.unsubscribe(@client, *topics)
+      @adapter.unsubscribe( *topics)
     end
 
     def set_tls_ssl_context(ca_cert, cert=nil, key=nil)
-      @adapter.set_tls_ssl_context(@client, ca_cert, cert, key)
+      @adapter.set_tls_ssl_context( ca_cert, cert, key)
     end
 
 
@@ -136,27 +123,27 @@ module MqttShareLib
     ### They are necessary (or really usefull and common) for the establishement of the connection and/or the basic Mqtt actions.
     ### The setter directely change the third party client value when the getter remote the actual SharedClient instance's attribute value
     def host
-      @client.host
+      @adapter.host
     end
     
     def host=(host)
-      @adapter.set_host(@client, host)
+      @adapter.host = host
     end
 
     def port
-      @client.port
+      @adapter.port
     end
     
     def port=(port)
-      @adapter.set_port(@client, port)
+      @adapter.port = port
     end
 
     def ssl
-      @client.ssl
+      @adapter.ssl
     end
 
     def ssl=(ssl)
-      @adapter.set_ssl(@client, ssl)
+      @adapter.ssl = ssl
     end
 
     #################################################
@@ -168,28 +155,9 @@ module MqttShareLib
     end
 
     def on_message=(callback)
-      @adapter.set_on_message(@client, callback)
+      @adapter.on_message = callback
     end
     
-    def on_connect
-      @adapter.on_connect(client, self.callback)
-    end
-    
-    def on_disconnect
-      @adapter.on_disconnect(client, self.callback)
-    end
-
-    def on_publish
-      @adapter.on_publish(client, self.on_publish )
-    end
-
-    def on_subsribe
-      @adapter.on_disconnect(client, self.on_subscribe)
-    end
-
-    def on_unsubscribe
-      @adapter.on_unsubscribe(client, self.on_unsubscribe)
-    end
     #################################################
     ###################### WIP ######################
     #################################################

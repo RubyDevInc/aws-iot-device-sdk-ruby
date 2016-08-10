@@ -1,9 +1,9 @@
-$LOAD_PATH << '~/Iot_raspberry_pi/MqttCore/'
+$LOAD_PATH << '~/Iot_raspberry_pi/MqttManager/'
 
 
-require "aws_mqtt_core"
+require "mqtt_manager"
 
-cli = MqttCore::MqttCore.new(host: "a15ipmbgzhr3uc.iot.ap-northeast-1.amazonaws.com",
+cli = MqttManager::MqttManager.new(host: "a15ipmbgzhr3uc.iot.ap-northeast-1.amazonaws.com",
                              port: 8883,
                              ssl: true,
                              cert_file: "/Users/Pierre/certs/certificate.pem.crt",
@@ -14,14 +14,13 @@ cli = MqttCore::MqttCore.new(host: "a15ipmbgzhr3uc.iot.ap-northeast-1.amazonaws.
 cli.connect
 
 
-cli.subscribe("topic_1")
+cli.subscribe("$aws/things/MyRasPi2/shadow/get/accepted")
 
 
-10.times do
-  cli.publish("topic_1", "Hi there, I am ruby mqtt core ^^, comming soon...")
+5.times do
+  cli.publish("$aws/things/MyRasPi2/shadow/get", "")
   sleep 1
 end
-
 
 cli.disconnect
 

@@ -1,9 +1,8 @@
-$LOAD_PATH << '~/IoT_raspberry_pi/MqttShareLib/lib'
+$LOAD_PATH << '~/IoT_raspberry_pi/MqttAdapterLib/lib'
 
-require "mqtt_share_lib"
+require "mqtt_adapter_lib"
 
-
-cli = MqttShareLib::SharedClient.new(host: "a15ipmbgzhr3uc.iot.ap-northeast-1.amazonaws.com",
+cli = MqttAdapterLib::MqttAdapter.new(host: "a15ipmbgzhr3uc.iot.ap-northeast-1.amazonaws.com",
                                      port: 8883,
                                      ssl: true,
                                      cert_file: "/Users/Pierre/certs/certificate.pem.crt",
@@ -11,9 +10,10 @@ cli = MqttShareLib::SharedClient.new(host: "a15ipmbgzhr3uc.iot.ap-northeast-1.am
                                      ca_file: "/Users/Pierre/certs/root-CA.crt")
 
 
-cli2 = MqttShareLib::SharedClient.new
+cli2 = MqttAdapterLib::MqttAdapter.new
 cli2.host = "a15ipmbgzhr3uc.iot.ap-northeast-1.amazonaws.com"
 cli2.port = 8883
+p "cli.port = #{cli.host}"
 cert_file = "/Users/Pierre/certs/certificate.pem.crt"
 key_file = "/Users/Pierre/certs/private.pem.key"
 ca_file = "/Users/Pierre/certs/root-CA.crt"

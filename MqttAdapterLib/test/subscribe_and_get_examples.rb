@@ -1,4 +1,4 @@
-$LOAD_PATH << '../lib'
+$LOAD_PATH << '~/IoT_raspberry_pi/MqttAdapterLib/lib'
 
 require "mqtt_share_lib"
 
