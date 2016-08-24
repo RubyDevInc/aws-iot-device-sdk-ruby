@@ -1,6 +1,5 @@
 $LOAD_PATH << '~/Iot_raspberry_pi/MqttManager/'
 
-
 require "mqtt_manager"
 
 cli = MqttManager::MqttManager.new(host: "a15ipmbgzhr3uc.iot.ap-northeast-1.amazonaws.com",
@@ -16,10 +15,11 @@ cli.connect
 
 cli.subscribe("$aws/things/MyRasPi2/shadow/get/accepted")
 
+sleep
 
 5.times do
   cli.publish("$aws/things/MyRasPi2/shadow/get", "")
-  sleep 1
+  sleep 
 end
 
 cli.disconnect

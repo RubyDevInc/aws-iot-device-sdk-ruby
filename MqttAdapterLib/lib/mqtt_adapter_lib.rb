@@ -9,7 +9,6 @@ module MqttAdapterLib
     @adapter
   end
 
-
   ### The setter of the module's adapter attributes
   def adapter=(adapter_lib)
     case adapter_lib
@@ -31,11 +30,12 @@ module MqttAdapterLib
     # Restrict access to the base client
     # attr_accessor :client
 
+    attr_reader :client_id
     ### @adapter contains the name of the adapter that should be module as a third party librairy
     ### The method call by the shared client are implemented by the third party or the adapter module itself.
     ### @adapter default value is MqttShareLib::Adapters::Ruby_mqtt_adapter
     attr_accessor :adapter
-
+    
     ### @on_'event' contains the callback's [block, Proc, lambda] that should be called when 'event' is catched
     ### Callbacks should be define in the upper class (ex. MqqtCore)
     ### Callback shoudl be called by some (private) handlers define in the third party librairy
@@ -45,6 +45,10 @@ module MqttAdapterLib
     ### @client default type is MQTT::Client
     def initialize(*args)
       @adapter = ::MqttAdapterLib.adapter.new(*args)
+    end
+
+    def client_id
+      @adapter.client_id
     end
     
     ### The following method represent the basics common MQTT actions.
@@ -106,12 +110,12 @@ module MqttAdapterLib
       @adapter.connected?
     end
     
-    def subscribe(*topics)
-      @adapter.subscribe( *topics)
+    def subscribe(topic)
+      @adapter.subscribe(topic)
     end
     
-    def unsubscribe(*topics)
-      @adapter.unsubscribe( *topics)
+    def unsubscribe(topic)
+      @adapter.unsubscribe(topic)
     end
 
     def set_tls_ssl_context(ca_cert, cert=nil, key=nil)
@@ -146,6 +150,13 @@ module MqttAdapterLib
       @adapter.ssl = ssl
     end
 
+    def add_callback_filter_topic(topic, callback)
+      @adapter.add_callback_filter_topic(topic, callback)
+    end
+
+    def remove_callback_filter_topic(topic)
+      @adapter.remove_callback_filter_topic(topic)
+    end   
     #################################################
     ###################### WIP ######################
     #################################################

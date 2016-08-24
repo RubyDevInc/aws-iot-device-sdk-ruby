@@ -21,8 +21,8 @@ module MqttCore
       @mutex_unsubscribe = Mutex.new()
       @draining_interval_s = 1
       @connect_result = nil
-      # Array of Hash or Nested Hash? => Currentely array of hash
-      @subscribed_topics = []
+      # Array of Hash or Nested Hash? => Currentely nested hash with topic name as key
+      @subscribed_topics = {}
 
       ### Set the on_message's callback
       @client.on_message = Proc.new do |userdata, message|
@@ -171,14 +171,18 @@ module MqttCore
       if topic.nil? 
         raise "subscribe error: topic cannot be nil"
       end
+      
       ret = false
+ 
       @mutex_subscribe.synchronize {
         ### TODO: add set_callback to topic
+        # @client.add_callback_filter_topic(topic, callback)
         rc = @client.subscribe(topic, qos)
         ### TODO: add subscirbe callback and suback management
+        @subscribed_topic["#{topic}"] = {qos: qos, callback: callback}
         ret = rc == 0
       }
-      return ret
+      ret
     end
 
     def unsubscribe(topic)
@@ -192,7 +196,7 @@ module MqttCore
         ### TODO: add unsubscribe and unsuback management
         ret  = rc == 0
       }
-      return ret
+      ret
     end
   end
 end

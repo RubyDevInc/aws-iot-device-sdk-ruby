@@ -5,9 +5,9 @@ require 'thread'
 
 module MqttManager
   class MqttManager
-    
-    attr_reader :client_id
 
+    attr_reader :client_id
+    
     attr_accessor :connection_timeout_s
 
     attr_accessor :mqtt_operation_timeout_s
@@ -30,6 +30,10 @@ module MqttManager
       end
       ####
       
+    end
+
+    def client_id
+      @client.client_id
     end
     
     def create_mqtt_adapter(*args)
@@ -95,7 +99,6 @@ module MqttManager
       puts "------------------- Topic: #{message.topic}" 
       puts "------------------- Payload: #{message.payload}"
       puts "###################"
-      puts "------------------- All message: #{message}"
     end
 
     def config_endpoint(host, port)
@@ -176,7 +179,8 @@ module MqttManager
       ret = false
       @mutex_subscribe.synchronize {
         ### TODO: add set_callback to topic
-        rc = @client.subscribe(topic, qos)
+        @client.add_callback_filter_topic(topic, callback) unless callback.nil?
+        rc = @client.subscribe(topic)
         ### TODO: add subscirbe callback and suback management
         ret = rc == 0
       }
@@ -198,4 +202,3 @@ module MqttManager
     end
   end
 end
-

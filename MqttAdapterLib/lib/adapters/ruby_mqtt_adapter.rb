@@ -6,14 +6,25 @@ require 'thread'
 module Adapters
   class Ruby_mqtt_adapter
     
+    attr_reader :client_id
+    
+    attr_accessor :filtered_topics
+    
     def initialize(*args)
       @client = MQTT::Client.new(*args)
+      @filtered_topics = {}
+      @client_id = ""
+      @client_id = generate_client_id
+    end
+
+    def client_id
+      @client_id
     end
     
     def test_own
       p "I am the test function implemented by the adapter"
     end
-    
+
     def publish(topic, payload='', retain=false, qos=0)
       @client.publish(topic, payload, retain, qos)
     end
@@ -27,9 +38,10 @@ module Adapters
       @client.connect(&block)
       loop_start
     end
-    
+
     def generate_client_id(prefix='ruby', lenght=16)
-      @client.generate_client_id(prefix, lenght)
+      charset = Array('A'..'Z') + Array('a'..'z') + Array('0'..'9')
+      @client_id << prefix << Array.new(lenght) { charset.sample }.join
     end
     
     def ssl_context
@@ -71,12 +83,17 @@ module Adapters
     
     def loop_read(max_message=4)
       counter_message = 0
-      while !@client.queue_empty? and counter_message <= max_message 
-        p "starting loop_read max message = #{max_message} and queue.empty? #{@client.queue_empty?}"
+      while !@client.queue_empty? and counter_message <= max_message       
         message = get_packet
-        on_message_callback(message)
+        ### Fitlering message if matching to filtered topic
+        topic = message.topic
+        if @filtered_topics.key?(topic)
+          callback = @filtered_topics.fetch("#{topic}")
+          callback.call(message)
+        else
+          on_message_callback(message)
+        end
         counter_message += 1
-        p "max message is : #{max_message} and empty queue? : #{@client.queue_empty?}"
       end
     end
     
@@ -159,6 +176,17 @@ module Adapters
       end
     end
     
+    def add_callback_filter_topic(topic, callback)
+      if callback.is_a? Proc
+        @filtered_topics["#{topic}"] = callback
+      end
+    end
+
+    def remove_callback_filter_topic(topic)
+      if @filtered_topics.key(topic)
+        @filtered_topics.delete("#{topic}")
+      end
+    end
     
     #################################################
     ###################### WIP ######################
@@ -186,7 +214,6 @@ module Adapters
     #################################################
 
     private
-
     
     def fake_handler(*args)
       func = @on_test
