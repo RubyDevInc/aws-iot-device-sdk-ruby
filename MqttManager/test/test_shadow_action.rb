@@ -18,19 +18,17 @@ topic_manager = MqttManager::TopicManager.new(manager)
 cli = ShadowActionManager.new("MyRasPi2", topic_manager, false)
 
 filter_callback = Proc.new do |message|
-  puts "Received (through filtered callback) : "
-  puts "------------------- Topic: #{message.topic}" 
-  puts "------------------- Payload: #{message.payload}"
-  puts "###################"
+  puts "Executing the specific callback for topic: #{message.topic}"
+  puts "############################################################################################################"
 end
 
 n = 1
 
-5.times do
-  cli.shadow_get(filter_callback, 3)
-  p "This is turn #{n}"
+3.times do
+  cli.shadow_get(filter_callback, 4)
+  puts "This is turn #{n}\n"
   n += 1
-  sleep 1
+  sleep 5
 end
 
 manager.disconnect

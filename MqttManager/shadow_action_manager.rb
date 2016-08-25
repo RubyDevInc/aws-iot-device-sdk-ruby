@@ -66,65 +66,60 @@ class ShadowActionManager
   end
 
   def do_default_callback_example(message)
-    puts "THIS IS THE EXAMPLE DEFAULT CALLBACK"
+    puts "EXECUTING THE EXAMPLE DEFAULT CALLBACK"
     @general_action_mutex.synchronize(){
       if message
-      topic = message.topic
-      action = parse_action(topic)
-      type = parse_type(topic)
-      @topic_subscribed_task_count[:get] -= 1
-      puts "Task on get : #{@topic_subscribed_task_count[:get]}"
-            
-      puts "----------------------------------------------------------------------------------------------------"
-      puts "------------------- Topic: #{message.topic}" 
-      puts "------------------- Payload: #{message.payload}"
-      puts "----------------------------------------------------------------------------------------------------"
-
-      thr = Thread.new { @topic_subscribed_callback[action.to_sym].call(message) } if @topic_subscribed_callback[action.to_sym]
+        topic = message.topic
+        action = parse_action(topic)
+        type = parse_type(topic)
+        @topic_subscribed_task_count[:get] -= 1
+        puts "---------------------------------------------------------------------------------------------------------------------------"
+        puts "------------------- Topic: #{message.topic}"
+        puts "------------------- Payload: #{message.payload}"
+        puts "---------------------------------------------------------------------------------------------------------------------------"
+        thr = Thread.new { @topic_subscribed_callback[action.to_sym].call(message) } if @topic_subscribed_callback[action.to_sym]
       end          
     }
   end
 
-  
   # The default callback that is called by every actions
   # It acknowledge the accepted status if action success and call a specific callback for each actions if defined
   def do_default_callback(message)    
     @general_action_mutex.synchronize(){
       topic = message.topic
-      action = parse_action(topic)
+      action = parse_action(topic).to_sym
       type = parse_type(topic)
-          
-      if %(get update delte).include?(action)
+      payload = message.payload
+      if %(get update delte).include?(action.to_s)
         ### Retrieve String from JSON Parser
+        # TODO: if @payload_parser.is_valid_payload(payload)
         token = payload_parser.get_value_from_key(:clientToken)
-        if token
-          puts "shadow message client token: #{token}"
-          if type.eql?("accepted")
-            new_version = payload_parser.get_value_from_key(:version)
-            if new_version && @token_pool.has_key?(token) && new_version > @last_stable_version
-              type.eql?("delete") ? @last_stable_version = -1 : @last_stable_version = new_version
-            end
-            @token_pool[token].cancel
-            @token_pool.delete[token]
-            @topic_subscribed_task_count[action.to_sym] -= 1
-            if @persitent_subscribe && @topic_subscribed_task_count[action.to_sym] <= 0
-              @topic_subscribed_task_count[action] = 0
-              @topic_manager.shadow_topic_subscribe(@shadow_name, action_name)
-            end
-            thr = Thread.new { @topic_subscribed_callback[action.to_sym].call } if @topic_subscribed_callback[action.to_sym]
-          end            
-        end
-      elsif %(delta).include?(action)
-        ### Format Payload from JSON to Hash/String
-        if payload_parser.valid_json || true
+        # TODO: if token is in token_pool
+        puts "shadow message client token: #{token}"
+        if type.eql?("accepted")
           new_version = payload_parser.get_value_from_key(:version)
-          if new_version && new_version > @last_stable_version = new_version
-            @last_stable_version = new_version
-            thr = Thread.new { @topic_subscribed_callback[action.to_sym].call } if @topic_subscribed_callback[action.to_sym]
+          if new_version && @token_pool.has_key?(token) && new_version > @last_stable_version
+            type.eql?("delete") ? @last_stable_version = -1 : @last_stable_version = new_version
+          end
+          @token_pool[token].cancel
+          @token_pool.delete[token]
+          @topic_subscribed_task_count[action] -= 1
+          unless @persitent_subscribe
+            @topic_subscribed_task_count[action] = 0 if @topic_subscribed_task_count[action] <= 0
+            @topic_manager.shadow_topic_unsubscribe(@shadow_name, action.to_s)
           end
         end
+        thr = Thread.new { @topic_subscribed_callback[action].call } if @topic_subscribed_callback[action]
+      elsif %(delta).include?(action)
+        ### Format Payload from JSON to Hash/String
+        # TODO: if @payload_parser.is_valid_payload(payload)
+        # new_version = payload_parser.get_value_from_key(:version)
+        if new_version && new_version > @last_stable_version = new_version
+          @last_stable_version = new_version
+          thr = Thread.new { @topic_subscribed_callback[action].call } if @topic_subscribed_callback[action]
+        end
       end
-     }
+    }
   end
   
   # Should cancel the token after a preset time interval
@@ -149,21 +144,22 @@ class ShadowActionManager
   def shadow_get(callback, timeout)
     current_token = Symbol
     json_payload = ""
+    timer = Timers::Group.new
     @general_action_mutex.synchronize(){
       @topic_subscribed_callback[:get] = callback
       @topic_subscribed_task_count[:get] += 1
       current_token = @token_handler.create_next_token
-      timer = Timers::Group.new
       timer.after(timeout){ timeout_manager(:get, current_token) }
       ### Build payload from string to JSON format
-      ### json_payload = @payload_parser(payload)
-      unless @persistent_subscribe && @is_get_subscribed
-        @topic_manager.shadow_topic_subscribe(@shadow_name, "get", @default_callback)
-        @is_get_subscribed = true
-      end
+      ### TODO : Set valid payload with client token
+      ### @payload_parser.set_client_token("client_token", current_token)
     }
-    @topic_manager.shadow_topic_publish(@shadow_name, "get", "")
-    @token_pool[current_token] = Thread.new{ timer.wait }
+    unless @persistent_subscribe && @is_get_subscribed
+      @topic_manager.shadow_topic_subscribe(@shadow_name, "get", @default_callback)
+      @is_get_subscribed = true
+    end
+    @topic_manager.shadow_topic_publish(@shadow_name, "get", json_payload)
+    @token_pool[current_token] = Thread.new{ puts "STARTING TIMER FOR TOKEN #{current_token}"; timer.wait }
     current_token
   end
 
@@ -174,9 +170,17 @@ class ShadowActionManager
   end
 
   def register_shadow_delta_callback(callback)
+    @general_action_mutex.synchronize(){
+      @topic_subscribed_callback[:delta] = callback
+    }
+    @topic_manager.shadow_topic_subscribe(@shadow_name, "delta", @default_callback)
   end
 
   def remove_shadow_delta_callback(callback)
+    @general_action_mutex.synchronize(){
+      @topic_subscribe_callback.delete[:delta]
+    }
+    @topic_manager.shadow_topic_unsubscribe(@shadow_name, "delta")
   end
 
   private
