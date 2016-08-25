@@ -4,16 +4,16 @@ require "mqtt_manager"
 require "shadow_topic_manager"
 require "shadow_action_manager"
 
-manager = MqttManager::MqttManager.new(host: "a15ipmbgzhr3uc.iot.ap-northeast-1.amazonaws.com",
+mqtt_client = MqttManager::MqttManager.new(host: "a15ipmbgzhr3uc.iot.ap-northeast-1.amazonaws.com",
                              port: 8883,
                              ssl: true,
                              cert_file: "/Users/Pierre/certs/certificate.pem.crt",
                              key_file: "/Users/Pierre/certs/private.pem.key",
                              ca_file: "/Users/Pierre/certs/root-CA.crt")
 
-manager.connect
+mqtt_client.connect
 
-topic_manager = MqttManager::TopicManager.new(manager)
+topic_manager = MqttManager::TopicManager.new(mqtt_client)
 
 cli = ShadowActionManager.new("MyRasPi2", topic_manager, false)
 
@@ -31,5 +31,5 @@ n = 1
   sleep 5
 end
 
-manager.disconnect
+mqtt_client.disconnect
 

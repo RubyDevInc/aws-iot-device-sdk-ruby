@@ -35,8 +35,8 @@ end
 
 class ShadowActionManager
   ### This the main AWS action manager
-  ### It allow to execute the AWS actions (get, update, delete)
-  ### It the means time it also manage the answer of the action
+  ### It allows to execute the AWS actions (get, update, delete)
+  ### It allows to manage the time out after an action have been start
   ### Actions request are send on the general actions topic and answer is retreived from accepted/refused/delta topics
   
   def initialize(shadow_name, shadow_topic_manager, persistent_subscription=flase)
@@ -82,8 +82,9 @@ class ShadowActionManager
     }
   end
 
-  # The default callback that is called by every actions
-  # It acknowledge the accepted status if action success and call a specific callback for each actions if defined
+  ### The default callback that is called by every actions
+  ### It acknowledge the accepted status if action success
+  ### Call a specific callback for each actions if it defined have been register previously
   def do_default_callback(message)    
     @general_action_mutex.synchronize(){
       topic = message.topic
@@ -122,7 +123,7 @@ class ShadowActionManager
     }
   end
   
-  # Should cancel the token after a preset time interval
+  ### Should cancel the token after a preset time interval
   def timeout_manager(action_name, token)
     puts "The #{action_name} request with the token #{token} has timed out!"
     @general_action_mutex.synchronize(){
@@ -141,12 +142,37 @@ class ShadowActionManager
     }
   end
 
-  def shadow_get(callback, timeout)
+
+  ### Send and publish packet with an empty payload contains in a valid JSON format.
+  ### A unique token is generate and send in the packet in order to trace the action.
+  ### Subscribe to the two get/accepted and get/rejected of the coresponding shadow.
+  ### If the request is accpeted, the answer would be send on the get/accepted topic.
+  ### It contains all the details of the shadow state in JSON document.
+  ### A specific callback in Proc could be send parameter.
+  ### Before exit, the function start a timer count down in the separate thread.
+  ### If the time ran out, the timer_handler function is called and the get action is cancelled using the token.
+  ###
+  ### Parameter:
+  ###   > callback: the Proc to execute when the answer to th get request would be received.
+  ###                It should accept three different paramter: 
+  ###                  - payload : the answer content
+  ###                  - response_status : among ['accepted', 'refused', 'delta']
+  ###                  - token : the token assoicate to the get request
+  ###                  
+  ###   > timeout: the period after which the request should be canceled and timer_handler should be call
+  ###
+  ### Returns :
+  ###   > the token associate to the current action (which also store in @token_pool) 
+
+
+  def shadow_get(callback=nil, timeout=5)
     current_token = Symbol
     json_payload = ""
     timer = Timers::Group.new
     @general_action_mutex.synchronize(){
-      @topic_subscribed_callback[:get] = callback
+      if callback.is_a?(Proc)
+        @topic_subscribed_callback[:get] = callback
+      end
       @topic_subscribed_task_count[:get] += 1
       current_token = @token_handler.create_next_token
       timer.after(timeout){ timeout_manager(:get, current_token) }
