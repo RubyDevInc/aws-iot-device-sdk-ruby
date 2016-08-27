@@ -22,14 +22,14 @@ filter_callback = Proc.new do |message|
   puts "############################################################################################################"
 end
 
-n = 1
-
-3.times do
-  cli.shadow_get(filter_callback, 4)
-  puts "This is turn #{n}\n"
-  n += 1
-  sleep 5
-end
+# n = 1
+#
+# 3.times do
+#   cli.shadow_get(filter_callback, 4)
+#   puts "This is turn #{n}\n"
+#   n += 1
+#   sleep 5
+# end
 
 # n = 1
 # 3.times do
@@ -41,12 +41,12 @@ end
 #   sleep 5
 # end
 
-# n = 1
-# 3.times do
-# 	cli.shadow_delete( filter_callback, 5)
-#   puts "This is turn #{n} shadow_delete\n"
-#   n += 1
-#   sleep 5
-# end
+n = 1
+3.times do
+	cli.shadow_delete( filter_callback, 5)
+  puts "This is turn #{n} shadow_delete\n"
+  n += 1
+  sleep 5
+end
 
 mqtt_client.disconnect

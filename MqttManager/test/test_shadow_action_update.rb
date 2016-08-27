@@ -22,24 +22,24 @@ filter_callback = Proc.new do |message|
   puts "############################################################################################################"
 end
 
-n = 1
-
-3.times do
-  cli.shadow_get(filter_callback, 4)
-  puts "This is turn #{n}\n"
-  n += 1
-  sleep 5
-end
-
 # n = 1
+#
 # 3.times do
-# 	# JSONPayload = '{"state":{"desired":{"property":' + str(n) + '}}}'
-#   json_payload = '{"state":{"desired":{"property":"test"}}}'
-# 	cli.shadow_update(json_payload, filter_callback, 5)
-#   puts "This is turn #{n} shadow_update\n"
+#   cli.shadow_get(filter_callback, 4)
+#   puts "This is turn #{n}\n"
 #   n += 1
 #   sleep 5
 # end
+
+n = 1
+3.times do
+	# JSONPayload = '{"state":{"desired":{"property":' + str(n) + '}}}'
+  json_payload = '{"state":{"desired":{"property":"test_inaba","test":"aaaaaa"}}}'
+	cli.shadow_update(json_payload, filter_callback, 5)
+  puts "This is turn #{n} shadow_update\n"
+  n += 1
+  sleep 5
+end
 
 # n = 1
 # 3.times do
