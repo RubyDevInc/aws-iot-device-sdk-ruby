@@ -25,7 +25,7 @@ module MqttAdapterLib
       raise "TypeError: Library name should be a String or Symbol"
     end
   end
-  
+
   class MqttAdapter
     # Restrict access to the base client
     # attr_accessor :client
@@ -35,11 +35,11 @@ module MqttAdapterLib
     ### The method call by the shared client are implemented by the third party or the adapter module itself.
     ### @adapter default value is MqttShareLib::Adapters::Ruby_mqtt_adapter
     attr_accessor :adapter
-    
+
     ### @on_'event' contains the callback's [block, Proc, lambda] that should be called when 'event' is catched
     ### Callbacks should be define in the upper class (ex. MqqtCore)
     ### Callback shoudl be called by some (private) handlers define in the third party librairy
-    
+
     ### On instanciation of a SharedClient, the client adapter is set as the previously define module adapter
     ### The client is then initialize with the client type of the third librairy of the adapter.
     ### @client default type is MQTT::Client
@@ -50,19 +50,19 @@ module MqttAdapterLib
     def client_id
       @adapter.client_id
     end
-    
+
     ### The following method represent the basics common MQTT actions.
     ### As possible, they should be implemented in the third party librairy
     ### If not, the adpater should implement them or throw and excpetion
     def connect(*args, &block)
       @adapter.connect( *args, &block)
     end
-    
+
     def publish(topic, payload='', retain=false, qos=0)
       @adapter.publish( topic, payload, retain, qos)
     end
 
-    def loop_start 
+    def loop_start
       @thread = @adapter.loop_start
     end
 
@@ -85,35 +85,35 @@ module MqttAdapterLib
     def loop_write
       @adapter.loop_write
     end
-    
+
     def loop_misc
       @adapter.loop_misc
     end
-    
+
     def get(topic=nil, &block)
       @adapter.get( topic, &block)
     end
-    
+
     def get_packet(topic=nil, &block)
       @adapter.get_packet( topic, &block)
     end
-    
+
     def generate_client_id
       @adapter.generate_client_id
     end
-    
+
     def disconnect(send_msg=true)
       @adapter.disconnect( send_msg)
     end
-    
+
     def connected?
       @adapter.connected?
     end
-    
+
     def subscribe(topic)
       @adapter.subscribe(topic)
     end
-    
+
     def unsubscribe(topic)
       @adapter.unsubscribe(topic)
     end
@@ -129,7 +129,7 @@ module MqttAdapterLib
     def host
       @adapter.host
     end
-    
+
     def host=(host)
       @adapter.host = host
     end
@@ -137,7 +137,7 @@ module MqttAdapterLib
     def port
       @adapter.port
     end
-    
+
     def port=(port)
       @adapter.port = port
     end
@@ -156,7 +156,7 @@ module MqttAdapterLib
 
     def remove_callback_filter_topic(topic)
       @adapter.remove_callback_filter_topic(topic)
-    end   
+    end
     #################################################
     ###################### WIP ######################
     #################################################
@@ -168,7 +168,7 @@ module MqttAdapterLib
     def on_message=(callback)
       @adapter.on_message = callback
     end
-    
+
     #################################################
     ###################### WIP ######################
     #################################################

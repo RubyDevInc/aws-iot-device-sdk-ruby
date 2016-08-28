@@ -7,12 +7,13 @@ module MqttManager
   class MqttManager
 
     attr_reader :client_id
-    
+
     attr_accessor :connection_timeout_s
 
     attr_accessor :mqtt_operation_timeout_s
 
     def initialize(*args)
+      puts "MqttManager args:#{args}"
       @client = create_mqtt_adapter(*args)
       # @offline_publish_queue = MqttCore::Utils::OfflineQueue.new
       # @mutex_offline_publish_queue = Mutex.new()
@@ -23,19 +24,19 @@ module MqttManager
       # @connect_result = nil
       # Array of Hash or Nested Hash? => Currentely array of hash
       # @subscribed_topics = []
-      
+
       ### Set the on_message's callback
       @client.on_message = Proc.new do |userdata, message|
         on_message_callback(userdata, message)
       end
       ####
-      
+
     end
 
     def client_id
       @client.client_id
     end
-    
+
     def create_mqtt_adapter(*args)
       @client = MqttAdapterLib::MqttAdapter.new(*args)
     end
@@ -46,11 +47,11 @@ module MqttManager
     def resubscribe_pool
       if @subscribed_topics.lenght > 0
         @subscribed_topics.each do |topic, qos, callback|
-          self.subscribe(topic, qos, callback)        
+          self.subscribe(topic, qos, callback)
         end
       end
     end
-    
+
     def drain_publish_queue
       while @offline_publish_queue.empty?
         @mutex_offline_publish_queue.synchronize {
@@ -74,9 +75,9 @@ module MqttManager
     def on_connect(userdata={}, flags, rc)
       @connect_result = rc
       if @connect_result == 0
-        subscription_thread = Thread.new { resubscribe_pool }      
+        subscription_thread = Thread.new { resubscribe_pool }
       end
-      
+
       if @subscribed_topics.empty?
         draining_thread = Thread.new { drain_publish_queue}
       end
@@ -96,13 +97,13 @@ module MqttManager
     ###########################################################
     def on_message_callback(message, userdata={})
       puts "Received (with no custom callback registred) : "
-      puts "------------------- Topic: #{message.topic}" 
+      puts "------------------- Topic: #{message.topic}"
       puts "------------------- Payload: #{message.payload}"
       puts "###################"
     end
 
     def config_endpoint(host, port)
-      if srcHost.nil? or srcPort.nil?
+      if host.nil? or port.nil?
         raise "config_endpoint error: either host or port is undefined error"
         exit
       end
@@ -118,7 +119,7 @@ module MqttManager
       @key = key
       @cert = cert
     end
-    
+
     def config_iam_credentials(aws_access_key_id, aws_secret_access_key, aws_session_token)
       if aws_access_key_id.nil? or aws_secret_access_key.nil? or  aws_session_token.nil?
         raise "config_iam_credentials error: aws_access_key_id, aws_secret_access_key or aws_session_token is undefined but required"
@@ -133,14 +134,17 @@ module MqttManager
       @client.setBackoffTime(base_reconnect_time_s, maximum_reconnect_time_s, minimum_connect_time_s)
       puts "base_reconnect_time_s have been set to: #{base_reconnect_time_s} second(s)"
       puts "maximum_reconnect_time_s have been set to: #{maximum_reconnect_time_s} second(s)"
-      puts "minimum_connect_time_s have been set to: #{minimum_connect_time_s} second(s)"    
+      puts "minimum_connect_time_s have been set to: #{minimum_connect_time_s} second(s)"
     end
 
     def connect(keep_alive_interval=30, &block)
       if keep_alive_interval.nil? and keep_alive_interval.is_a(Integer)
         raise "connect error: keep_alive_interval cannot be a not nil Interger"
       end
-      #@client.set_tls_ssl_context(@ca_file, @cert, @key)
+      @client.set_tls_ssl_context(@ca_file, @cert, @key)
+      @client.host=(@host)
+      @client.port=(@port)
+      # @client.connect(@host,@port)
       @client.connect
       ### Execute the loop in background for and time period definie by mqtt_connection_timeout
       # @client.loop_start()
@@ -173,7 +177,7 @@ module MqttManager
     end
 
     def subscribe(topic, qos=0, callback=nil)
-      if topic.nil? 
+      if topic.nil?
         raise "subscribe error: topic cannot be nil"
       end
       ret = false

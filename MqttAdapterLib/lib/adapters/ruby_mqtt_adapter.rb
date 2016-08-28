@@ -5,11 +5,11 @@ require 'thread'
 # module MqttShareLib
 module Adapters
   class Ruby_mqtt_adapter
-    
+
     attr_reader :client_id
-    
+
     attr_accessor :filtered_topics
-    
+
     def initialize(*args)
       @client = MQTT::Client.new(*args)
       @filtered_topics = {}
@@ -20,7 +20,7 @@ module Adapters
     def client_id
       @client_id
     end
-    
+
     def test_own
       p "I am the test function implemented by the adapter"
     end
@@ -32,7 +32,7 @@ module Adapters
     def create_client(*args)
       @client = MQTT::Client.new(*args)
     end
-    
+
     def connect(*args, &block)
       client = create_client(*args) if @client.nil?
       @client.connect(&block)
@@ -43,19 +43,19 @@ module Adapters
       charset = Array('A'..'Z') + Array('a'..'z') + Array('0'..'9')
       @client_id << prefix << Array.new(lenght) { charset.sample }.join
     end
-    
+
     def ssl_context
       @client.ssl_context
     end
-    
+
     def disconnect(send_msg=true)
       @client.disconnect(send_msg)
     end
-    
+
     def connected?
       @client.connected?
     end
-    
+
     def subscribe(topics, qos=0)
       @client.subscribe(topics, qos)
     end
@@ -68,22 +68,22 @@ module Adapters
     def loop_stop(thread)
       thread.join
     end
-    
+
     def loop_forever
       loop do
         mqtt_loop
       end
     end
-    
+
     def mqtt_loop
       loop_read
       loop_write
       loop_misc
     end
-    
+
     def loop_read(max_message=4)
       counter_message = 0
-      while !@client.queue_empty? and counter_message <= max_message       
+      while !@client.queue_empty? and counter_message <= max_message
         message = get_packet
         ### Fitlering message if matching to filtered topic
         topic = message.topic
@@ -96,15 +96,15 @@ module Adapters
         counter_message += 1
       end
     end
-    
+
     def loop_write
       ### Not implemented yet
     end
-    
+
     def loop_misc
       ### Not implemented yet
     end
-    
+
     def get(topic=nil, &block)
       @client.get(topic, &block)
     end
@@ -116,11 +116,11 @@ module Adapters
     def queue_empty?
       @client.queue_empty?
     end
-    
+
     def queue_length
       @client.queue_length
     end
-    
+
     def unsubscribe(*topics)
       @client.unsubscribe(*topics)
     end
@@ -128,7 +128,7 @@ module Adapters
     def host
       @client.host
     end
-    
+
     def host=(host)
       @client.host = host
     end
@@ -137,7 +137,7 @@ module Adapters
       @client.port
     end
 
-    
+
     def port=(port)
       @client.port = port
     end
@@ -145,7 +145,7 @@ module Adapters
     def ssl=(ssl)
       @client.ssl = ssl
     end
-    
+
     def set_tls_ssl_context(ca_cert, cert=nil, key=nil)
       @client.ssl = true
       @client.cert_file = cert
@@ -157,7 +157,7 @@ module Adapters
     def on_test=(on_test)
       @on_test = on_test
     end
-    
+
     def on_test(*args, &block)
       p "I am at the test callback"
       if block_given?
@@ -165,17 +165,17 @@ module Adapters
         block.call(*args)
       end
     end
-    
+
     def on_message=(callback)
       @on_message = callback
     end
-    
+
     def on_message_callback(message)
       if @on_message.is_a? Proc
         @on_message.call(message)
       end
     end
-    
+
     def add_callback_filter_topic(topic, callback)
       if callback.is_a? Proc
         @filtered_topics["#{topic}"] = callback
@@ -187,7 +187,7 @@ module Adapters
         @filtered_topics.delete("#{topic}")
       end
     end
-    
+
     #################################################
     ###################### WIP ######################
     #################################################
@@ -200,11 +200,11 @@ module Adapters
       block.call()
     end
 
-    
+
     def on_publish(&block)
       block.call()
     end
-    
+
     def on_subscribe(&block)
       block.call()
     end
@@ -214,7 +214,7 @@ module Adapters
     #################################################
 
     private
-    
+
     def fake_handler(*args)
       func = @on_test
       on_test(*args, &func)
