@@ -4,12 +4,12 @@ require "mqtt_manager"
 require "shadow_topic_manager"
 require "shadow_action_manager"
 
-mqtt_client = MqttManager::MqttManager.new(host: "a15ipmbgzhr3uc.iot.ap-northeast-1.amazonaws.com",
+mqtt_client = MqttManager::MqttManager.new(host: "a2perapdhhaey0.iot.ap-northeast-1.amazonaws.com",
                              port: 8883,
                              ssl: true,
-                             cert_file: "/Users/Pierre/certs/certificate.pem.crt",
-                             key_file: "/Users/Pierre/certs/private.pem.key",
-                             ca_file: "/Users/Pierre/certs/root-CA.crt")
+                             cert_file: "/Users/inaba/certs/certificate.pem.crt",
+                             key_file: "/Users/inaba/certs/private.pem.key",
+                             ca_file: "/Users/inaba/certs/root-CA.crt")
 
 mqtt_client.connect
 
@@ -23,13 +23,12 @@ filter_callback = Proc.new do |message|
 end
 
 n = 1
-
 3.times do
-  cli.shadow_get(filter_callback, 4)
-  puts "This is turn #{n}\n"
+	json_payload = "{\"state\":{\"desired\":{\"property\":\"RubySDK\",\"count\":#{n}}}}"
+	cli.shadow_update(json_payload, filter_callback, 5)
+  puts "This is turn #{n} shadow_update\n"
   n += 1
   sleep 5
 end
 
 mqtt_client.disconnect
-
