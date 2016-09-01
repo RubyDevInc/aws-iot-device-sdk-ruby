@@ -1,6 +1,6 @@
 $LOAD_PATH << '~/IoT_raspberry_pi/MqttAdapterLib/lib'
 
-require "mqtt_adapter_lib"
+require 'mqtt_adapter_lib'
 require 'thread'
 
 module MqttManager
@@ -12,8 +12,13 @@ module MqttManager
 
     attr_accessor :mqtt_operation_timeout_s
 
+    attr_accessor :host
+
+    attr_accessor :port
+
+    attr_accessor :ssl
+
     def initialize(*args)
-      puts "MqttManager args:#{args}"
       @client = create_mqtt_adapter(*args)
       # @offline_publish_queue = MqttCore::Utils::OfflineQueue.new
       # @mutex_offline_publish_queue = Mutex.new()
@@ -22,15 +27,40 @@ module MqttManager
       @mutex_unsubscribe = Mutex.new()
       # @draining_interval_s = 1
       # @connect_result = nil
-      # Array of Hash or Nested Hash? => Currentely array of hash
+      # Array of Hash || Nested Hash? => Currentely array of hash
       # @subscribed_topics = []
+
+      if args.last.is_a?(Hash)
+        attr = args.pop
+      else
+        attr = {}
+      end
+
+      attr.each_pair do |k, v|
+        self.send("#{k}=", v)
+      end
+
+      if ssl_configured?
+        @client.set_tls_ssl_context(@ca_file, @cert, @key)
+      end
 
       ### Set the on_message's callback
       @client.on_message = Proc.new do |userdata, message|
         on_message_callback(userdata, message)
       end
       ####
+    end
 
+    def cert_file=(path)
+      @cert = path
+    end
+
+    def key_file=(path)
+      @key = path
+    end
+
+    def ca_file=(path)
+      @ca_file = path
     end
 
     def client_id
@@ -63,8 +93,8 @@ module MqttManager
     end
 
     def set_offline_publish_queueing(queue_size, drop_behavior)
-      if queue_size.nil? or drop_behavior.nil?
-        raise "setOffliePublishQueueing error: queue_size or drop_behavior is undefined but required"
+      if queue_size.nil? || drop_behavior.nil?
+        raise "setOffliePublishQueueing error: queue_size || drop_behavior is undefined but required"
       end
       @offline_publish_queue = MqttCore::Utils::OfflineQueue.new(queue_size, drop_behavior)
     end
@@ -103,33 +133,35 @@ module MqttManager
     end
 
     def config_endpoint(host, port)
-      if host.nil? or port.nil?
-        raise "config_endpoint error: either host or port is undefined error"
-        exit
+      if host.nil? || port.nil?
+        raise "config_endpoint error: either host || port is undefined error"
       end
       @host = host
       @port = port
     end
 
     def config_ssl_context(ca_file, key, cert)
-      if ca_file.nil? or key.nil? or cert.nil?
-        raise "config_ssl_context error: ca_file, key or cert is undefined but required"
+      if @ca_file.nil? && @key.nil? && @cert.nil?
+        @client.set_tls_ssl_context(ca_file, cert, key)
+        @ca_file = ca_file
+        @key = key
+        @cert = cert
+        @ssl_configured = ssl_configured?
+      else
+        raise "config_ssl_context: Cannot set proper new ssl context for the connection.\n A ssl context might have already been intialized for this client"
       end
-      @ca_file = ca_file
-      @key = key
-      @cert = cert
     end
 
     def config_iam_credentials(aws_access_key_id, aws_secret_access_key, aws_session_token)
-      if aws_access_key_id.nil? or aws_secret_access_key.nil? or  aws_session_token.nil?
-        raise "config_iam_credentials error: aws_access_key_id, aws_secret_access_key or aws_session_token is undefined but required"
+      if aws_access_key_id.nil? || aws_secret_access_key.nil? ||  aws_session_token.nil?
+        raise "config_iam_credentials error: aws_access_key_id, aws_secret_access_key || aws_session_token is undefined but required"
       end
       @client.configIAMCredentials(aws_access_key_id, aws_secret_access_key, aws_session_token)
     end
 
     def set_backoff_time(base_reconnect_time_s, maximum_reconnect_time_s, minimum_connect_time_s)
-      if base_reconnect_time_s.nil? or maximum_reconnect_time_s or  minimum_connect_time_s.nil?
-        raise "set_backoff_time error: base_reconnect_time_s, maximum_reconnect_time_s or minimum_connect_time_s is undefined but required"
+      if base_reconnect_time_s.nil? || maximum_reconnect_time_s ||  minimum_connect_time_s.nil?
+        raise "set_backoff_time error: base_reconnect_time_s, maximum_reconnect_time_s || minimum_connect_time_s is undefined but required"
       end
       @client.setBackoffTime(base_reconnect_time_s, maximum_reconnect_time_s, minimum_connect_time_s)
       puts "base_reconnect_time_s have been set to: #{base_reconnect_time_s} second(s)"
@@ -138,22 +170,21 @@ module MqttManager
     end
 
     def connect(keep_alive_interval=30, &block)
-      if keep_alive_interval.nil? and keep_alive_interval.is_a(Integer)
+      if keep_alive_interval.nil? && keep_alive_interval.is_a(Integer)
         raise "connect error: keep_alive_interval cannot be a not nil Interger"
       end
-      @client.set_tls_ssl_context(@ca_file, @cert, @key)
+
       @client.host=(@host)
       @client.port=(@port)
+      ### Execute a mqtt opration loop in background for time period defined by mqtt_connection_timeout
       # @client.connect(@host,@port)
       @client.connect
-      ### Execute the loop in background for and time period definie by mqtt_connection_timeout
-      # @client.loop_start()
-      ##### TODO : waiting for connack and change connection result (fron maxInt to 0) or send disconnect
+      ##### TODO : waiting for connack && change connection result (fron maxInt to 0) || send disconnect
     end
 
     def disconnect
       @client.disconnect
-      ##### TODO : waiting for disconnack and change disconnection result (fron maxInt to 0) or send error
+      ##### TODO : waiting for disconnack && change disconnection result (fron maxInt to 0) || send error
     end
 
     def publish(topic, payload="", qos=0, retain=nil)
@@ -185,7 +216,7 @@ module MqttManager
         ### TODO: add set_callback to topic
         @client.add_callback_filter_topic(topic, callback) unless callback.nil?
         rc = @client.subscribe(topic)
-        ### TODO: add subscirbe callback and suback management
+        ### TODO: add subscirbe callback && suback management
         ret = rc == 0
       }
       return ret
@@ -199,10 +230,18 @@ module MqttManager
       @mutex_unsubscribe.synchronize{
         ### TODO: add unset_callback to topic
         rc = @client.unsubscribe(topic)
-        ### TODO: add unsubscribe and unsuback management
+        ### TODO: add unsubscribe && unsuback management
         ret  = rc == 0
       }
       return ret
+    end
+
+
+    private
+
+
+    def ssl_configured?
+      !( @ca_file.nil? || @cert.nil? || @key.nil? )
     end
   end
 end

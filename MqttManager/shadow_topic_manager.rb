@@ -75,9 +75,9 @@ module MqttManager
           @mqtt_manager.subscribe(topic.get_topic_accepted, 0, callback)
           @mqtt_manager.subscribe(topic.get_topic_rejected, 0, callback)
         end
-        # TODO subscribeが完了するまで少し待つ、秒数ではなくcallbackなどを受けるようにしたい
-        sleep 2
       }
+      # TODO subscribeが完了するまで少し待つ、秒数ではなくcallbackなどを受けるようにしたいo
+      sleep 2
     end
 
     def shadow_topic_unsubscribe(shadow_name, shadow_action)

@@ -55,11 +55,11 @@ module MqttAdapterLib
     ### As possible, they should be implemented in the third party librairy
     ### If not, the adpater should implement them or throw and excpetion
     def connect(*args, &block)
-      @adapter.connect( *args, &block)
+      @adapter.connect(*args, &block)
     end
 
     def publish(topic, payload='', retain=false, qos=0)
-      @adapter.publish( topic, payload, retain, qos)
+      @adapter.publish(topic, payload, retain, qos)
     end
 
     def loop_start
@@ -91,11 +91,11 @@ module MqttAdapterLib
     end
 
     def get(topic=nil, &block)
-      @adapter.get( topic, &block)
+      @adapter.get(topic, &block)
     end
 
     def get_packet(topic=nil, &block)
-      @adapter.get_packet( topic, &block)
+      @adapter.get_packet(topic, &block)
     end
 
     def generate_client_id
@@ -103,7 +103,7 @@ module MqttAdapterLib
     end
 
     def disconnect(send_msg=true)
-      @adapter.disconnect( send_msg)
+      @adapter.disconnect(send_msg)
     end
 
     def connected?
@@ -119,7 +119,7 @@ module MqttAdapterLib
     end
 
     def set_tls_ssl_context(ca_cert, cert=nil, key=nil)
-      @adapter.set_tls_ssl_context( ca_cert, cert, key)
+      @adapter.set_tls_ssl_context(ca_cert, cert, key)
     end
 
 

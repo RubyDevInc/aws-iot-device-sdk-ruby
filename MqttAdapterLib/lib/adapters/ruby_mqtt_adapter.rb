@@ -81,14 +81,14 @@ module Adapters
       loop_misc
     end
 
-    def loop_read(max_message=4)
+    def loop_read(max_message=10)
       counter_message = 0
-      while !@client.queue_empty? and counter_message <= max_message
+      while !@client.queue_empty? && counter_message <= max_message
         message = get_packet
         ### Fitlering message if matching to filtered topic
         topic = message.topic
         if @filtered_topics.key?(topic)
-          callback = @filtered_topics.fetch("#{topic}")
+          callback = @filtered_topics[topic]
           callback.call(message)
         else
           on_message_callback(message)
@@ -148,9 +148,10 @@ module Adapters
 
     def set_tls_ssl_context(ca_cert, cert=nil, key=nil)
       @client.ssl = true
-      @client.cert_file = cert
-      @client.key_file = key
-      @client.ca_file = ca_cert
+      @client.ssl_context
+      @client.cert_file= cert
+      @client.key_file= key
+      @client.ca_file= ca_cert
     end
 
 
@@ -178,7 +179,7 @@ module Adapters
 
     def add_callback_filter_topic(topic, callback)
       if callback.is_a? Proc
-        @filtered_topics["#{topic}"] = callback
+        @filtered_topics[topic] = callback
       end
     end
 
