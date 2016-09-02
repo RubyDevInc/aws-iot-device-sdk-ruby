@@ -20,15 +20,14 @@ module MqttManager
 
     def initialize(*args)
       @client = create_mqtt_adapter(*args)
-      # @offline_publish_queue = MqttCore::Utils::OfflineQueue.new
-      # @mutex_offline_publish_queue = Mutex.new()
       @mutex_publish = Mutex.new()
       @mutex_subscribe = Mutex.new()
       @mutex_unsubscribe = Mutex.new()
+      # TODO manage MQTT event and execute corresponding callback with the following variables
+      # @offline_publish_queue = MqttCore::Utils::OfflineQueue.new
+      # @mutex_offline_publish_queue = Mutex.new()
       # @draining_interval_s = 1
       # @connect_result = nil
-      # Array of Hash || Nested Hash? => Currentely array of hash
-      # @subscribed_topics = []
 
       if args.last.is_a?(Hash)
         attr = args.pop
@@ -48,7 +47,6 @@ module MqttManager
       @client.on_message = Proc.new do |userdata, message|
         on_message_callback(userdata, message)
       end
-      ####
     end
 
     def cert_file=(path)
@@ -69,6 +67,105 @@ module MqttManager
 
     def create_mqtt_adapter(*args)
       @client = MqttAdapterLib::MqttAdapter.new(*args)
+    end
+
+    def on_message_callback(message, userdata={})
+      puts "Received (with no custom callback registred) : "
+      puts "------------------- Topic: #{message.topic}"
+      puts "------------------- Payload: #{message.payload}"
+    end
+
+    def config_endpoint(host, port)
+      if host.nil? || port.nil?
+        raise "config_endpoint error: either host || port is undefined error"
+      end
+      @host = host
+      @port = port
+    end
+
+    def config_ssl_context(ca_file, key, cert)
+      if @ca_file.nil? && @key.nil? && @cert.nil?
+        @client.set_tls_ssl_context(ca_file, cert, key)
+        @ca_file = ca_file
+        @key = key
+        @cert = cert
+        @ssl_configured = ssl_configured?
+      else
+        raise "config_ssl_context: Cannot set proper new ssl context for the connection.\n A ssl context might have already been intialized for this client"
+      end
+    end
+
+    def config_iam_credentials(aws_access_key_id, aws_secret_access_key, aws_session_token)
+      if aws_access_key_id.nil? || aws_secret_access_key.nil? ||  aws_session_token.nil?
+        raise "config_iam_credentials error: aws_access_key_id, aws_secret_access_key || aws_session_token is undefined but required"
+      end
+      @client.configIAMCredentials(aws_access_key_id, aws_secret_access_key, aws_session_token)
+    end
+
+    def connect(keep_alive_interval=30, &block)
+      if keep_alive_interval.nil? && keep_alive_interval.is_a(Integer)
+        raise "connect error: keep_alive_interval cannot be a not nil Interger"
+      end
+
+      @client.host=(@host)
+      @client.port=(@port)
+      ### Execute a mqtt opration loop in background for time period defined by mqtt_connection_timeout
+      @client.connect(block)
+      ##### TODO : waiting for connack && change connection result (fron maxInt to 0) || send disconnect
+    end
+
+    def disconnect
+      @client.disconnect
+      ##### TODO : waiting for disconnack && change disconnection result (fron maxInt to 0) || send error
+    end
+
+    def publish(topic, payload="", qos=0, retain=nil)
+      ### TODO: add testing part on connection status
+      ### TODO: add push to offlinequeue
+      ### TODO: add draining queue check
+      if topic.nil?
+        raise "publish error: topic cannot be nil"
+      end
+      ret = false
+      @mutex_publish.synchronize{
+        rc = @client.publish(topic,payload,qos,retain)
+        # TODO: implement return code (for publish)
+        #        ret = rc == 0
+        ret = true
+        unless ret == true
+          raise "publish error: publish faild with code #{rc}"
+        end
+      }
+      ret
+    end
+
+    def subscribe(topic, qos=0, callback=nil)
+      if topic.nil?
+        raise "subscribe error: topic cannot be nil"
+      end
+      ret = false
+      @mutex_subscribe.synchronize {
+        ### TODO: add set_callback to topic
+        @client.add_callback_filter_topic(topic, callback) unless callback.nil?
+        rc = @client.subscribe(topic)
+        ### TODO: add subscirbe callback && suback management
+        ret = rc == 0
+      }
+      return ret
+    end
+
+    def unsubscribe(topic)
+      if topic.nil?
+        raise "unsubscribe error: topic cannot be nil"
+      end
+      ret = false
+      @mutex_unsubscribe.synchronize{
+        ### TODO: add unset_callback to topic
+        rc = @client.unsubscribe(topic)
+        ### TODO: add unsubscribe && unsuback management
+        ret  = rc == 0
+      }
+      return ret
     end
 
     ###########################################################
@@ -122,43 +219,6 @@ module MqttManager
     def on_unsubscribe
     end
 
-    ###########################################################
-    ###########################################################
-    ###########################################################
-    def on_message_callback(message, userdata={})
-      puts "Received (with no custom callback registred) : "
-      puts "------------------- Topic: #{message.topic}"
-      puts "------------------- Payload: #{message.payload}"
-      puts "###################"
-    end
-
-    def config_endpoint(host, port)
-      if host.nil? || port.nil?
-        raise "config_endpoint error: either host || port is undefined error"
-      end
-      @host = host
-      @port = port
-    end
-
-    def config_ssl_context(ca_file, key, cert)
-      if @ca_file.nil? && @key.nil? && @cert.nil?
-        @client.set_tls_ssl_context(ca_file, cert, key)
-        @ca_file = ca_file
-        @key = key
-        @cert = cert
-        @ssl_configured = ssl_configured?
-      else
-        raise "config_ssl_context: Cannot set proper new ssl context for the connection.\n A ssl context might have already been intialized for this client"
-      end
-    end
-
-    def config_iam_credentials(aws_access_key_id, aws_secret_access_key, aws_session_token)
-      if aws_access_key_id.nil? || aws_secret_access_key.nil? ||  aws_session_token.nil?
-        raise "config_iam_credentials error: aws_access_key_id, aws_secret_access_key || aws_session_token is undefined but required"
-      end
-      @client.configIAMCredentials(aws_access_key_id, aws_secret_access_key, aws_session_token)
-    end
-
     def set_backoff_time(base_reconnect_time_s, maximum_reconnect_time_s, minimum_connect_time_s)
       if base_reconnect_time_s.nil? || maximum_reconnect_time_s ||  minimum_connect_time_s.nil?
         raise "set_backoff_time error: base_reconnect_time_s, maximum_reconnect_time_s || minimum_connect_time_s is undefined but required"
@@ -169,72 +229,9 @@ module MqttManager
       puts "minimum_connect_time_s have been set to: #{minimum_connect_time_s} second(s)"
     end
 
-    def connect(keep_alive_interval=30, &block)
-      if keep_alive_interval.nil? && keep_alive_interval.is_a(Integer)
-        raise "connect error: keep_alive_interval cannot be a not nil Interger"
-      end
-
-      @client.host=(@host)
-      @client.port=(@port)
-      ### Execute a mqtt opration loop in background for time period defined by mqtt_connection_timeout
-      # @client.connect(@host,@port)
-      @client.connect
-      ##### TODO : waiting for connack && change connection result (fron maxInt to 0) || send disconnect
-    end
-
-    def disconnect
-      @client.disconnect
-      ##### TODO : waiting for disconnack && change disconnection result (fron maxInt to 0) || send error
-    end
-
-    def publish(topic, payload="", qos=0, retain=nil)
-      ### TODO: add testing part on connection status
-      ### TODO: add push to offlinequeue
-      ### TODO: add draining queue check
-      if topic.nil?
-        raise "publish error: topic cannot be nil"
-      end
-      ret = false
-      @mutex_publish.synchronize{
-        rc = @client.publish(topic,payload,qos,retain)
-        #        ret = rc == 0
-        # TODO: implement return code (for publish)
-        ret = true
-        if !ret
-          raise "publish error: publish faild with code #{rc}"
-        end
-      }
-      return ret
-    end
-
-    def subscribe(topic, qos=0, callback=nil)
-      if topic.nil?
-        raise "subscribe error: topic cannot be nil"
-      end
-      ret = false
-      @mutex_subscribe.synchronize {
-        ### TODO: add set_callback to topic
-        @client.add_callback_filter_topic(topic, callback) unless callback.nil?
-        rc = @client.subscribe(topic)
-        ### TODO: add subscirbe callback && suback management
-        ret = rc == 0
-      }
-      return ret
-    end
-
-    def unsubscribe(topic)
-      if topic.nil?
-        raise "unsubscribe error: topic cannot be nil"
-      end
-      ret = false
-      @mutex_unsubscribe.synchronize{
-        ### TODO: add unset_callback to topic
-        rc = @client.unsubscribe(topic)
-        ### TODO: add unsubscribe && unsuback management
-        ret  = rc == 0
-      }
-      return ret
-    end
+    ###########################################################
+    ###########################################################
+    ###########################################################
 
 
     private

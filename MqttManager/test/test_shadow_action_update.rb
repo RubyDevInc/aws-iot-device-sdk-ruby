@@ -18,16 +18,15 @@ topic_manager = MqttManager::TopicManager.new(mqtt_client)
 cli = ShadowActionManager.new("MyRasPi", topic_manager, false)
 
 filter_callback = Proc.new do |message|
-  puts "Executing the specific callback for a message on topic: #{message.topic}\n"
+  puts "Executing the specific callback for topic: #{message.topic}\n##########################################\n"
 end
 
 cli.register_shadow_delta_callback(filter_callback)
 
-timeout = 0.1
+timeout = 5
 n = 1
 
 5.times do
-  puts "THIS IS TURN: #{n}\n"
   json_payload = "{\"state\":{\"desired\":{\"property\":\"RubySDK\",\"count\":#{n}}}}"
   cli.shadow_update(json_payload, filter_callback, timeout)
   n += 1

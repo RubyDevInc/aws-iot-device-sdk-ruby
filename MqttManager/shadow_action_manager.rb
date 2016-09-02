@@ -81,9 +81,7 @@ class ShadowActionManager
     @token_pool = {}
     @general_action_mutex = Mutex.new
     @default_callback = Proc.new do |message|
-      #do_default_callback_example(message)
       do_default_callback(message)
-      #puts "THIS TEST CALLBACK FOR #{message.payload}"
     end
   end
 
@@ -131,11 +129,6 @@ class ShadowActionManager
           @topic_subscribed_task_count[action.to_sym] -= 1
           if @topic_subscribed_task_count[action.to_sym] < 0
             @topic_subscribed_task_count[action.to_sym] = 0
-            # TODO persitent_subscribeの動きを確認して追加
-            #            unless @persistent_subscribed
-            #                @topic_manager.shadow_topic_unsubscribe(@shadow_name, action)
-            #                @is_subscribed[action.to_sym] = false
-            #            end
           end
         end
       elsif %(delta).include?(action)
@@ -144,8 +137,7 @@ class ShadowActionManager
           @last_stable_version = new_version
           Thread.new { @topic_subscribed_callback[action.to_sym].call(message) } if @topic_subscribed_callback[action.to_sym]
         else
-#          puts "CATCH A DELTA BUT OUTDATED/INVALID VERSION (= #{new_version})\n"
-          puts "CATCH A DELTA BUT OUTDATED/INVALID VERSION (=#{new_version})\n"
+          puts "CATCH A DELTA BUT OUTDATED/INVALID VERSION (= #{new_version})\n"
         end
       end
     }
@@ -161,15 +153,11 @@ class ShadowActionManager
         @topic_subscribed_task_count[action] -= 1
         unless @persitent_subscribe || @topic_subscribed_task_count[action] < 0
           @topic_subscribed_task_count[action] = 0
-          # @topic_manager.shadow_topic_unsubscribe(@shadow_name, action_name)
-          # @is_subscribed[action] = false 
         end
         unless @topic_subscribed_callback[action].blank?
           puts "Shadow request with token: #{token} has timed out."
           @topic_subscribed_callback[action].call("REQUEST TIME OUT", "timeout", token)
         end
-      else
-        puts "SORRY BRO TOO LATE FOR TIMEOUT\n"
       end
     }
   end
@@ -209,18 +197,14 @@ class ShadowActionManager
       timer.after(timeout){ timeout_manager(:get, current_token) }
       @payload_parser.set_attribute_value("clientToken",current_token)
       json_payload = @payload_parser.get_json
-      # unless @persistent_subscribe && @is_get_subscribed
-      # TODO @persistent_subscribeの動きを確認して追加
-      #unless @is_subscribed[:get]
-      unless @persistent_subscribed
+      unless @persistent_subscribed || @is_subscribed[:get]
         @topic_manager.shadow_topic_subscribe(@shadow_name, "get", @default_callback)
         @is_subscribed[:get] = true
       end
       @topic_manager.shadow_topic_publish(@shadow_name, "get", json_payload)
-      # TODO タイマーをセットしているがthreadを渡してタイマーをキャンセルできるようにしたい
-      # @token_pool[current_token] = Thread.new{ puts "STARTING TIMER FOR TOKEN #{current_token} GET"; timer.wait }
       @token_pool[current_token] = timer
-      Thread.new{ puts "STARTING TIMER FOR TOKEN #{current_token} GET\n"; timer.wait }
+      #      Thread.new{ puts "STARTING TIMER FOR TOKEN #{current_token} GET\n"; timer.wait }
+      Thread.new{ timer.wait }
       current_token
     }
   end
@@ -239,18 +223,14 @@ class ShadowActionManager
       @payload_parser.set_message(payload)
       @payload_parser.set_attribute_value("clientToken",current_token)
       json_payload = @payload_parser.get_json
-      # unless @persistent_subscribe && @is_get_subscribed
-      # TODO @persistent_subscribeの動きを確認して追加
-      #    unless @persistent_subscribed
       unless @persistent_subscribed || @is_subscribed[:update]
         @topic_manager.shadow_topic_subscribe(@shadow_name, "update", @default_callback)
         @is_subscribed[:update] = true
       end
       @topic_manager.shadow_topic_publish(@shadow_name, "update", json_payload)
-      # TODO タイマーをセットしているがthreadを渡してタイマーをキャンセルできるようにしたい
-      # @token_pool[current_token] = Thread.new{ puts "STARTING TIMER FOR TOKEN #{current_token} UPDATE"; timer.wait }
       @token_pool[current_token] = timer
-      Thread.new{ puts "STARTING TIMER FOR TOKEN #{current_token} UPDATE\n"; timer.wait }
+      #      Thread.new{ puts "STARTING TIMER FOR TOKEN #{current_token} UPDATE\n"; timer.wait }
+      Thread.new{ timer.wait }
       current_token
     }
   end
@@ -268,17 +248,14 @@ class ShadowActionManager
       timer.after(timeout){ timeout_manager(:delete, current_token) }
       @payload_parser.set_attribute_value("clientToken",current_token)
       json_payload = @payload_parser.get_json
-    # unless @persistent_subscribe && @is_get_subscribed
-    # TODO @persistent_subscribeの動きを確認して追加
-    unless @is_subscribed[:delete]
+    unless @is_subscribed[:delete] || @is_subscribed[:delete]
       @topic_manager.shadow_topic_subscribe(@shadow_name, "delete", @default_callback)
       @is_subscribed[:delete] = true
     end
     @topic_manager.shadow_topic_publish(@shadow_name, "delete", json_payload)
-    # TODO タイマーをセットしているがthreadを渡してタイマーをキャンセルできるようにしたい
-    # @token_pool[current_token] = Thread.new{ puts "STARTING TIMER FOR TOKEN #{current_token} DETETE"; timer.wait }
     @token_pool[current_token] = timer
-    Thread.new{ puts "STARTING TIMER FOR TOKEN #{current_token} DELETE"; timer.wait }
+    #    Thread.new{ puts "STARTING TIMER FOR TOKEN #{current_token} DELETE\n"; timer.wait }
+    Thread.new{ timer.wait }
     current_token
     }
   end

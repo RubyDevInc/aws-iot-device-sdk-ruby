@@ -76,7 +76,6 @@ module MqttManager
           @mqtt_manager.subscribe(topic.get_topic_rejected, 0, callback)
         end
       }
-      # TODO subscribeが完了するまで少し待つ、秒数ではなくcallbackなどを受けるようにしたいo
       sleep 2
     end
 

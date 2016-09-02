@@ -20,17 +20,16 @@ myShadowClient.connect
 cli = myShadowClient.createShadowHandlerWithName("MyRasPi2",false)
 
 filter_callback = Proc.new do |message|
-  puts "Executing the specific callback for topic: #{message.topic}"
-  puts "##########################################"
+  puts "Executing the specific callback for topic: #{message.topic}\n##########################################\n"
 end
 
 n = 1
 
 3.times do
   cli.shadow_get(filter_callback, 4)
-  puts "This is turn #{n}\n"
   n += 1
-  sleep 5
 end
+
+sleep 2
 
 myShadowClient.disconnect

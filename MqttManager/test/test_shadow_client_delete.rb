@@ -18,12 +18,18 @@ myShadowClient.connect
 cli = myShadowClient.createShadowHandlerWithName('TestThing',false)
 
 filter_callback = Proc.new do |message|
-  puts "Executing the specific callback for topic: #{message.topic}"
-  puts "##########################################"
+  puts "Executing the specific callback for topic: #{message.topic}\n##########################################\n"
 end
 
-puts "Start shadow_delete\n"
-cli.shadow_delete(filter_callback, 5)
+n = 1
+
+3.times do
+  puts "Start shadow_delete\n"
+  cli.shadow_delete(filter_callback, 5)
+  json_payload = "{\"state\":{\"desired\":{\"property\":\"RubySDK\"}}}"
+  cli.shadow_update(json_payload, nil, 5)
+  n += 1
+end
 sleep 1
 
 myShadowClient.disconnect

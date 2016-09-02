@@ -157,20 +157,9 @@ module MqttAdapterLib
     def remove_callback_filter_topic(topic)
       @adapter.remove_callback_filter_topic(topic)
     end
-    #################################################
-    ###################### WIP ######################
-    #################################################
-
-    def on_test=(on_test)
-      @adapter.on_test = on_test
-    end
 
     def on_message=(callback)
       @adapter.on_message = callback
     end
-
-    #################################################
-    ###################### WIP ######################
-    #################################################
   end
 end

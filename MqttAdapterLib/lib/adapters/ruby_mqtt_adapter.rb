@@ -1,8 +1,6 @@
 require 'mqtt'
 require 'thread'
 
-
-# module MqttShareLib
 module Adapters
   class Ruby_mqtt_adapter
 
@@ -19,10 +17,6 @@ module Adapters
 
     def client_id
       @client_id
-    end
-
-    def test_own
-      p "I am the test function implemented by the adapter"
     end
 
     def publish(topic, payload='', retain=false, qos=0)
@@ -149,22 +143,9 @@ module Adapters
     def set_tls_ssl_context(ca_cert, cert=nil, key=nil)
       @client.ssl = true
       @client.ssl_context
-      @client.cert_file= cert
-      @client.key_file= key
-      @client.ca_file= ca_cert
-    end
-
-
-    def on_test=(on_test)
-      @on_test = on_test
-    end
-
-    def on_test(*args, &block)
-      p "I am at the test callback"
-      if block_given?
-        p " I am executing the test callabck"
-        block.call(*args)
-      end
+      @client.cert_file = cert
+      @client.key_file = key
+      @client.ca_file = ca_cert
     end
 
     def on_message=(callback)
@@ -222,4 +203,3 @@ module Adapters
     end
   end
 end
-# end
