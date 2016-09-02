@@ -6,11 +6,6 @@ require "shadow_action_manager"
 
 class ShadowClient
   def initialize
-    @host = ""
-    @port = ""
-    @srcCAFile = ""
-    @srcKey = ""
-    @srcCert = ""
     @mqtt_client = MqttManager::MqttManager.new
   end
 
@@ -18,25 +13,25 @@ class ShadowClient
     @mqtt_client.connect
   end
 
-  def topicManager
+  def topic_manager
     @topic_manager = MqttManager::TopicManager.new(@mqtt_client)
   end
 
-  def createShadowHandlerWithName(shadowName, isPersistentSubscribe)
-    topicManager
-    ShadowActionManager.new(shadowName, @topic_manager, isPersistentSubscribe)
+  def create_shadow_handler_with_name(shadow_name, is_persistent_subscribe=false)
+    topic_manager
+    ShadowActionManager.new(shadow_name, @topic_manager, is_persistent_subscribe)
   end
 
   def disconnect
     @mqtt_client.disconnect
   end
 
-  def configureEndpoint(host,port)
+  def configure_endpoint(host,port)
     @mqtt_client.config_endpoint(host,port)
   end
 
-  def configureCredentials(srcCAFile, srcKey, srcCert)
-    @mqtt_client.config_ssl_context(srcCAFile, srcKey, srcCert)
+  def configure_credentials(ca_file, key, cert)
+    @mqtt_client.config_ssl_context(ca_file, key, cert)
   end
 
 end

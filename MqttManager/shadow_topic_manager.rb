@@ -66,7 +66,7 @@ module MqttManager
       @mqtt_manager.publish(topic.get_topic_general, payload, false, 0)
     end
 
-    def shadow_topic_subscribe(shadow_name, shadow_action, callback)
+    def shadow_topic_subscribe(shadow_name, shadow_action, callback=nil)
       @sub_unsub_mutex.synchronize(){
         topic = TopicBuilder.new(shadow_name, shadow_action)
         if topic.is_delta?(shadow_action)

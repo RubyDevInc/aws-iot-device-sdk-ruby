@@ -5,19 +5,19 @@ $LOAD_PATH << '~/Iot_raspberry_pi/MqttManager/'
 # require "shadow_action_manager"
 require "shadow_client"
 
-rootCAPath = "/Users/Pierre/certs/root-CA.crt"
-privateKeyPath = "/Users/Pierre/certs/private.pem.key"
-certificatePath = "/Users/Pierre/certs/certificate.pem.crt"
+root_ca_path = "/Users/Pierre/certs/root-CA.crt"
+private_key_path = "/Users/Pierre/certs/private.pem.key"
+certificate_path = "/Users/Pierre/certs/certificate.pem.crt"
 
 host = "a2perapdhhaey0.iot.ap-northeast-1.amazonaws.com"
 port = 8883
-myShadowClient = ShadowClient.new
-myShadowClient.configureEndpoint(host, port)
-myShadowClient.configureCredentials(rootCAPath, privateKeyPath, certificatePath)
+my_shadow_client = ShadowClient.new
+my_shadow_client.configure_endpoint(host, port)
+my_shadow_client.configure_credentials(root_ca_path, private_key_path, certificate_path)
 
-myShadowClient.connect
+my_shadow_client.connect
 
-cli = myShadowClient.createShadowHandlerWithName("MyRasPi2",false)
+cli = my_shadow_client.create_shadow_handler_with_name("MyRasPi2",false)
 
 filter_callback = Proc.new do |message|
   puts "Executing the specific callback for topic: #{message.topic}\n##########################################\n"
@@ -32,4 +32,4 @@ end
 
 sleep 2
 
-myShadowClient.disconnect
+my_shadow_client.disconnect

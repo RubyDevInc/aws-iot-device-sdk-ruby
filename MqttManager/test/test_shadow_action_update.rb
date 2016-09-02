@@ -10,28 +10,28 @@ mqtt_client = MqttManager::MqttManager.new(host: "a2perapdhhaey0.iot.ap-northeas
                              cert_file: "/Users/Pierre/certs/certificate.pem.crt",
                              key_file: "/Users/Pierre/certs/private.pem.key",
                              ca_file: "/Users/Pierre/certs/root-CA.crt")
-
 mqtt_client.connect
-
-topic_manager = MqttManager::TopicManager.new(mqtt_client)
-
-cli = ShadowActionManager.new("MyRasPi", topic_manager, false)
 
 filter_callback = Proc.new do |message|
   puts "Executing the specific callback for topic: #{message.topic}\n##########################################\n"
 end
 
-cli.register_shadow_delta_callback(filter_callback)
-
 timeout = 5
+
+topic_manager = MqttManager::TopicManager.new(mqtt_client)
+
+client = ShadowActionManager.new("MyRasPi", topic_manager, false)
+
+client.register_shadow_delta_callback(filter_callback)
+
 n = 1
 
 5.times do
   json_payload = "{\"state\":{\"desired\":{\"property\":\"RubySDK\",\"count\":#{n}}}}"
-  cli.shadow_update(json_payload, filter_callback, timeout)
+  client.shadow_update(json_payload, filter_callback, timeout)
   n += 1
 end
 
-sleep 2
+sleep timeout
 
 mqtt_client.disconnect

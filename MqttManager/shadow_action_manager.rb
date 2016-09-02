@@ -59,7 +59,7 @@ class ShadowActionManager
   ### It allows to manage the time out after an action have been start
   ### Actions request are send on the general actions topic and answer is retreived from accepted/refused/delta topics
 
-  def initialize(shadow_name, shadow_topic_manager, persistent_subscribed=false)
+  def initialize(shadow_name, shadow_topic_manager, persistent_subscribe=false)
     @shadow_name = shadow_name
     @topic_manager = shadow_topic_manager
     @payload_parser = JSONPayloadParser.new
@@ -68,7 +68,7 @@ class ShadowActionManager
     @is_subscribed[:update] = false
     @is_subscribed[:delete] = false
     @token_handler = TokenCreator.new(shadow_name, shadow_topic_manager.client_id)
-    @persistent_subscribed = persistent_subscribed
+    @persistent_subscribe = persistent_subscribe
     @last_stable_version = -1 #Mean no currentely stable
     @topic_subscribed_callback = {}
     @topic_subscribed_callback[:get] = nil
@@ -121,17 +121,21 @@ class ShadowActionManager
               type.eql?("delete") ? @last_stable_version = -1 : @last_stable_version = new_version
               Thread.new {  @topic_subscribed_callback[action.to_sym].call(message) } if @topic_subscribed_callback[action.to_sym]
             else
-             puts "CATCH AN UPDATE BUT OUTDATED/INVALID VERSION (= #{new_version}) FOR TOKEN #{token}\n"
+              puts "CATCH AN UPDATE BUT OUTDATED/INVALID VERSION (= #{new_version}) FOR TOKEN #{token}\n"
             end
           end
           @token_pool[token].cancel
           @token_pool.delete(token) 
           @topic_subscribed_task_count[action.to_sym] -= 1
-          if @topic_subscribed_task_count[action.to_sym] < 0
+          if @topic_subscribed_task_count[action.to_sym] <= 0
             @topic_subscribed_task_count[action.to_sym] = 0
+            unless @persistent_subscribe
+              @topic_manager.shadow_topic_unsubscribe(@shadow_name, action)
+              @is_subscribed[action.to_sym] = false
+            end
           end
         end
-      elsif %(delta).include?(action)
+      elsif %w(delta).include?(action)
         new_version = @payload_parser.get_attribute_value("version")
         if new_version && new_version >= @last_stable_version
           @last_stable_version = new_version
@@ -151,8 +155,12 @@ class ShadowActionManager
         @token_pool.delete(token)
         puts "The #{action_name} request with the token #{token} has timed out!\n"
         @topic_subscribed_task_count[action] -= 1
-        unless @persitent_subscribe || @topic_subscribed_task_count[action] < 0
+        unless @topic_subscribed_task_count[action] <= 0
           @topic_subscribed_task_count[action] = 0
+          unless @persistent_subscribe
+            @topic_manager.shadow_topic_unsubscribe(@shadow_name, action)
+            @is_subscribed[action.to_sym] = false
+          end
         end
         unless @topic_subscribed_callback[action].blank?
           puts "Shadow request with token: #{token} has timed out."
@@ -197,7 +205,7 @@ class ShadowActionManager
       timer.after(timeout){ timeout_manager(:get, current_token) }
       @payload_parser.set_attribute_value("clientToken",current_token)
       json_payload = @payload_parser.get_json
-      unless @persistent_subscribed || @is_subscribed[:get]
+      unless @is_subscribed[:get]
         @topic_manager.shadow_topic_subscribe(@shadow_name, "get", @default_callback)
         @is_subscribed[:get] = true
       end
@@ -223,7 +231,7 @@ class ShadowActionManager
       @payload_parser.set_message(payload)
       @payload_parser.set_attribute_value("clientToken",current_token)
       json_payload = @payload_parser.get_json
-      unless @persistent_subscribed || @is_subscribed[:update]
+      unless @is_subscribed[:update]
         @topic_manager.shadow_topic_subscribe(@shadow_name, "update", @default_callback)
         @is_subscribed[:update] = true
       end
@@ -248,15 +256,15 @@ class ShadowActionManager
       timer.after(timeout){ timeout_manager(:delete, current_token) }
       @payload_parser.set_attribute_value("clientToken",current_token)
       json_payload = @payload_parser.get_json
-    unless @is_subscribed[:delete] || @is_subscribed[:delete]
-      @topic_manager.shadow_topic_subscribe(@shadow_name, "delete", @default_callback)
-      @is_subscribed[:delete] = true
-    end
-    @topic_manager.shadow_topic_publish(@shadow_name, "delete", json_payload)
-    @token_pool[current_token] = timer
-    #    Thread.new{ puts "STARTING TIMER FOR TOKEN #{current_token} DELETE\n"; timer.wait }
-    Thread.new{ timer.wait }
-    current_token
+      unless @is_subscribed[:delete]
+        @topic_manager.shadow_topic_subscribe(@shadow_name, "delete", @default_callback)
+        @is_subscribed[:delete] = true
+      end
+      @topic_manager.shadow_topic_publish(@shadow_name, "delete", json_payload)
+      @token_pool[current_token] = timer
+      #    Thread.new{ puts "STARTING TIMER FOR TOKEN #{current_token} DELETE\n"; timer.wait }
+      Thread.new{ timer.wait }
+      current_token
     }
   end
 
