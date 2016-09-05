@@ -63,7 +63,14 @@ end
 
 puts "##### Starting test_shadow_client_get ######"
 my_shadow_client.get_shadow(filter_callback, 4)
+sleep 5
 
-sleep 1
+puts "##### Starting test_shadow_client_get ######"
+my_shadow_client.get_shadow(nil, 4)
+sleep 5
+
+puts "##### Starting test_shadow_client_get ######"
+my_shadow_client.get_shadow(filter_callback, 4)
+sleep 5
 
 my_shadow_client.disconnect

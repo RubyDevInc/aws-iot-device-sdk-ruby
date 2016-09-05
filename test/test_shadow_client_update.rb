@@ -2,6 +2,7 @@ $LOAD_PATH << ENV['AWS_IOT_SDK_RUBY_PATH']
 
 require 'shadow_client'
 require 'optparse'
+require 'json'
 
 options = {}
 
@@ -61,9 +62,8 @@ filter_callback = Proc.new do |message|
 end
 
 delta_callback = Proc.new do |delta|
-  message = JSON.parse(delta)
-  puts message
-  puts "Catch a message on delta:\n> >>>>> #{message["message"]}\n"
+  message = JSON.parse(delta.payload)
+  puts "Catching a new message : #{message["state"]["message"]}\n##########################################\n"
 end
 
 my_shadow_client.register_delta_callback(delta_callback)
@@ -72,7 +72,7 @@ n = 1
 3.times do
   puts "Type the message that you want to register in the thing [#{thing}]:"
   entry = $stdin.readline()
-  json_payload = "{\"state\":{\"reported\":{\"message\":\"pipi\"}}}"
+  json_payload = "{\"state\":{\"desired\":{\"message\":\"#{entry.delete!("\n")}\"}}}"
   my_shadow_client.update_shadow(json_payload, filter_callback, 5)
   puts "#{3 - n} Message(s) left"
   sleep 2
@@ -80,4 +80,5 @@ n = 1
 end
 
 sleep 5
+
 my_shadow_client.disconnect
