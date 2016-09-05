@@ -1,5 +1,3 @@
-$LOAD_PATH << ENV['MQTT_ADAPTER_PATH']
-
 require 'mqtt_adapter_lib'
 require 'thread'
 
@@ -38,8 +36,8 @@ module MqttManager
       end
 
       ### Set the on_message's callback
-      @client.on_message = Proc.new do |userdata, message|
-        on_message_callback(userdata, message)
+      @client.on_message = Proc.new do |message|
+        on_message_callback(message)
       end
     end
 

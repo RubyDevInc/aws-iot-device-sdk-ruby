@@ -1,5 +1,3 @@
-$LOAD_PATH << ENV['AWS_IOT_SDK_RUBY_PATH']
-
 require 'shadow_client'
 require 'optparse'
 require 'json'
@@ -79,6 +77,5 @@ n = 1
   n += 1
 end
 
-sleep 5
 
 my_shadow_client.disconnect

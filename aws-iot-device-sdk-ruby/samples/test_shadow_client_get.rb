@@ -1,5 +1,3 @@
-$LOAD_PATH << ENV['AWS_IOT_SDK_RUBY_PATH']
-
 require 'shadow_client'
 require 'optparse'
 

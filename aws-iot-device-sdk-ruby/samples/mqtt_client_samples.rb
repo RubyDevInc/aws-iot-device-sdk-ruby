@@ -1,5 +1,3 @@
-$LOAD_PATH << ENV['AWS_IOT_SDK_RUBY_PATH']
-
 require 'mqtt_manager'
 require 'optparse'
 
@@ -74,8 +72,9 @@ end
 client.subscribe("topic_2", 0, callback)
 client2.subscribe("topic_1", 0,callback2)
 
-sleep 2
 
+puts "# STARTING EXAMPLE #"
+sleep 2
 client.publish("topic_1", "Hello Sir. My name is client 1. How do you do? ")
 sleep 2
 client2.publish("topic_2", "Hello Mister Client 1. My name is client 2. How do you do?")

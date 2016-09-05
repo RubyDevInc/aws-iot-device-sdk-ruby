@@ -124,7 +124,7 @@ module Adapters
       loop_write
       loop_misc
     end
-
+    
     def loop_read(max_message=10)
       counter_message = 0
       while !@client.queue_empty? && counter_message <= max_message
@@ -139,6 +139,12 @@ module Adapters
         end
         counter_message += 1
       end
+    end
+
+    def loop_write
+    end
+
+    def loop_misc
     end
 
     def on_message=(callback)
