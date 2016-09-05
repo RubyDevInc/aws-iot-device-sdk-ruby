@@ -1,4 +1,4 @@
-$LOAD_PATH << '~/IoT_raspberry_pi/MqttAdapterLib/lib'
+$LOAD_PATH << ENV['MQTT_ADAPTER_PATH']
 
 require 'mqtt_adapter_lib'
 require 'thread'
@@ -28,19 +28,18 @@ module MqttManager
       # @mutex_offline_publish_queue = Mutex.new()
       # @draining_interval_s = 1
       # @connect_result = nil
-
+      @ssl_configured = false
+      
       if args.last.is_a?(Hash)
         attr = args.pop
-      else
-        attr = {}
+        attr.each_pair do |k, v|
+          self.send("#{k}=", v)
+        end
       end
-
-      attr.each_pair do |k, v|
-        self.send("#{k}=", v)
-      end
-
-      if ssl_configured?
+      
+      if need_ssl_configure?
         @client.set_tls_ssl_context(@ca_file, @cert, @key)
+        @ssl_configured = true
       end
 
       ### Set the on_message's callback
@@ -84,22 +83,15 @@ module MqttManager
     end
 
     def config_ssl_context(ca_file, key, cert)
-      if @ca_file.nil? && @key.nil? && @cert.nil?
-        @client.set_tls_ssl_context(ca_file, cert, key)
-        @ca_file = ca_file
-        @key = key
-        @cert = cert
-        @ssl_configured = ssl_configured?
-      else
-        raise "config_ssl_context: Cannot set proper new ssl context for the connection.\n A ssl context might have already been intialized for this client"
-      end
-    end
-
-    def config_iam_credentials(aws_access_key_id, aws_secret_access_key, aws_session_token)
-      if aws_access_key_id.nil? || aws_secret_access_key.nil? ||  aws_session_token.nil?
-        raise "config_iam_credentials error: aws_access_key_id, aws_secret_access_key || aws_session_token is undefined but required"
-      end
-      @client.configIAMCredentials(aws_access_key_id, aws_secret_access_key, aws_session_token)
+      @ca_file = ca_file
+      @key = key
+      @cert = cert
+      # if need_ssl_configure? && !@ssl_configured
+      @client.set_tls_ssl_context(ca_file, cert, key)
+      #    @ssl_configured = true
+      #  else
+      #     raise "config_ssl_context: Cannot set proper new ssl context for the connection.\n A ssl context might have already been intialized for this client."
+      #  end
     end
 
     def connect(keep_alive_interval=30, &block)
@@ -130,8 +122,8 @@ module MqttManager
       @mutex_publish.synchronize{
         rc = @client.publish(topic,payload,qos,retain)
         # TODO: implement return code (for publish)
-        #        ret = rc == 0
-        ret = true
+        rc = 0
+        ret = rc == 0
         unless ret == true
           raise "publish error: publish faild with code #{rc}"
         end
@@ -149,9 +141,10 @@ module MqttManager
         @client.add_callback_filter_topic(topic, callback) unless callback.nil?
         rc = @client.subscribe(topic)
         ### TODO: add subscirbe callback && suback management
+        rc = 0
         ret = rc == 0
       }
-      return ret
+      ret
     end
 
     def unsubscribe(topic)
@@ -160,17 +153,26 @@ module MqttManager
       end
       ret = false
       @mutex_unsubscribe.synchronize{
-        ### TODO: add unset_callback to topic
+        @client.remove_callback_filter(topic)
         rc = @client.unsubscribe(topic)
         ### TODO: add unsubscribe && unsuback management
-        ret  = rc == 0
+        rc = 0
+        ret  = rc == 0       
       }
-      return ret
+      ret
     end
 
     ###########################################################
+    ##################### DO NOT USE! #########################
     ########## Not Implemented in current version #############
     ###########################################################
+    def config_iam_credentials(aws_access_key_id, aws_secret_access_key, aws_session_token)
+      if aws_access_key_id.nil? || aws_secret_access_key.nil? ||  aws_session_token.nil?
+        raise "config_iam_credentials error: aws_access_key_id, aws_secret_access_key || aws_session_token is undefined but required"
+      end
+      @client.config_iam_credentials(aws_access_key_id, aws_secret_access_key, aws_session_token)
+    end
+    
     def resubscribe_pool
       if @subscribed_topics.lenght > 0
         @subscribed_topics.each do |topic, qos, callback|
@@ -223,12 +225,11 @@ module MqttManager
       if base_reconnect_time_s.nil? || maximum_reconnect_time_s ||  minimum_connect_time_s.nil?
         raise "set_backoff_time error: base_reconnect_time_s, maximum_reconnect_time_s || minimum_connect_time_s is undefined but required"
       end
-      @client.setBackoffTime(base_reconnect_time_s, maximum_reconnect_time_s, minimum_connect_time_s)
+      @client.set_backoffTime(base_reconnect_time_s, maximum_reconnect_time_s, minimum_connect_time_s)
       puts "base_reconnect_time_s have been set to: #{base_reconnect_time_s} second(s)"
       puts "maximum_reconnect_time_s have been set to: #{maximum_reconnect_time_s} second(s)"
       puts "minimum_connect_time_s have been set to: #{minimum_connect_time_s} second(s)"
     end
-
     ###########################################################
     ###########################################################
     ###########################################################
@@ -237,8 +238,8 @@ module MqttManager
     private
 
 
-    def ssl_configured?
-      !( @ca_file.nil? || @cert.nil? || @key.nil? )
+    def need_ssl_configure?
+      !( @ca_file.nil? || @cert.nil? || @key.nil? ) && @ssl
     end
   end
 end

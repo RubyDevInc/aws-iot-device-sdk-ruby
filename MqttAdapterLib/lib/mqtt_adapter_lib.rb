@@ -1,10 +1,12 @@
+require 'facets'
+
 module MqttAdapterLib
   extend self
 
   ### Return the adapter selected for the module with either a pre-setted value or a default value
   def adapter
     return @adapter if @adapter
-    ### Calling the setter method with the default symbol 'ruby_mqtt_adapter' and return it.
+    ### Calling the setter method with the default symbol 'RubyMqttAdapter' and return it.
     self.adapter = :ruby_mqtt_adapter
     @adapter
   end
@@ -19,28 +21,26 @@ module MqttAdapterLib
         raise "LoadError: Could find adapters for the lib #{adapter_lib}"
         exit
       end
-      @adapter = Adapters.const_get("#{adapter_lib.to_s.capitalize}")
-    #      @adapter = MqttShareLib::Adapters.const_get("#{adapter_lib.to_s.capitalize}")
+      @adapter = Adapters.const_get("#{adapter_lib.to_s.camelcase(:upper)}")
     else
       raise "TypeError: Library name should be a String or Symbol"
     end
   end
 
   class MqttAdapter
-    # Restrict access to the base client
-    # attr_accessor :client
 
     attr_reader :client_id
+    
     ### @adapter contains the name of the adapter that should be module as a third party librairy
     ### The method call by the shared client are implemented by the third party or the adapter module itself.
-    ### @adapter default value is MqttShareLib::Adapters::Ruby_mqtt_adapter
+    ### @adapter default value is MqttShareLib::Adapters::RubyMqttAdapter
     attr_accessor :adapter
 
     ### @on_'event' contains the callback's [block, Proc, lambda] that should be called when 'event' is catched
-    ### Callbacks should be define in the upper class (ex. MqqtCore)
-    ### Callback shoudl be called by some (private) handlers define in the third party librairy
+    ### Callbacks should be customized in the higher level class (ex. MqttManger or upper)
+    ### Callback should be called by some (private) handlers define in the third party librairy
 
-    ### On instanciation of a SharedClient, the client adapter is set as the previously define module adapter
+    ### On a MqttAdapter's create, the client adapter is set as the previously define module adapter
     ### The client is then initialize with the client type of the third librairy of the adapter.
     ### @client default type is MQTT::Client
     def initialize(*args)
@@ -122,7 +122,18 @@ module MqttAdapterLib
       @adapter.set_tls_ssl_context(ca_cert, cert, key)
     end
 
+    def add_callback_filter_topic(topic, callback)
+      @adapter.add_callback_filter_topic(topic, callback)
+    end
 
+    def remove_callback_filter_topic(topic)
+      @adapter.remove_callback_filter_topic(topic)
+    end
+
+    def on_message=(callback)
+      @adapter.on_message = callback
+    end
+    
     ### The following attributes should exists in every MQTT third party librairy.
     ### They are necessary (or really usefull and common) for the establishement of the connection and/or the basic Mqtt actions.
     ### The setter directely change the third party client value when the getter remote the actual SharedClient instance's attribute value
@@ -142,24 +153,13 @@ module MqttAdapterLib
       @adapter.port = port
     end
 
+    # Boolean for the encrypted mode (true = ssl/tls | false = no encryption)
     def ssl
       @adapter.ssl
     end
 
     def ssl=(ssl)
       @adapter.ssl = ssl
-    end
-
-    def add_callback_filter_topic(topic, callback)
-      @adapter.add_callback_filter_topic(topic, callback)
-    end
-
-    def remove_callback_filter_topic(topic)
-      @adapter.remove_callback_filter_topic(topic)
-    end
-
-    def on_message=(callback)
-      @adapter.on_message = callback
     end
   end
 end

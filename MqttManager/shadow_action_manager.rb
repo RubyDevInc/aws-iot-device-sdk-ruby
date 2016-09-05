@@ -275,7 +275,7 @@ class ShadowActionManager
     @topic_manager.shadow_topic_subscribe(@shadow_name, "delta", @default_callback)
   end
 
-  def remove_shadow_delta_callback(callback)
+  def remove_shadow_delta_callback
     @general_action_mutex.synchronize(){
       @topic_subscribe_callback.delete[:delta]
     }

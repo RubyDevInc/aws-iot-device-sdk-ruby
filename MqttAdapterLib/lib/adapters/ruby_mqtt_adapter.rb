@@ -2,7 +2,7 @@ require 'mqtt'
 require 'thread'
 
 module Adapters
-  class Ruby_mqtt_adapter
+  class RubyMqttAdapter
 
     attr_reader :client_id
 
@@ -54,51 +54,6 @@ module Adapters
       @client.subscribe(topics, qos)
     end
 
-
-    def loop_start
-      Thread.new{loop_forever}
-    end
-
-    def loop_stop(thread)
-      thread.join
-    end
-
-    def loop_forever
-      loop do
-        mqtt_loop
-      end
-    end
-
-    def mqtt_loop
-      loop_read
-      loop_write
-      loop_misc
-    end
-
-    def loop_read(max_message=10)
-      counter_message = 0
-      while !@client.queue_empty? && counter_message <= max_message
-        message = get_packet
-        ### Fitlering message if matching to filtered topic
-        topic = message.topic
-        if @filtered_topics.key?(topic)
-          callback = @filtered_topics[topic]
-          callback.call(message)
-        else
-          on_message_callback(message)
-        end
-        counter_message += 1
-      end
-    end
-
-    def loop_write
-      ### Not implemented yet
-    end
-
-    def loop_misc
-      ### Not implemented yet
-    end
-
     def get(topic=nil, &block)
       @client.get(topic, &block)
     end
@@ -141,11 +96,49 @@ module Adapters
     end
 
     def set_tls_ssl_context(ca_cert, cert=nil, key=nil)
-      @client.ssl = true
+      @client.ssl ||= true
       @client.ssl_context
       @client.cert_file = cert
       @client.key_file = key
       @client.ca_file = ca_cert
+    end
+
+    ############### Custom Features #################
+
+    def loop_start
+      Thread.new{loop_forever}
+    end
+
+    def loop_stop(thread)
+      thread.join
+    end
+
+    def loop_forever
+      loop do
+        mqtt_loop
+      end
+    end
+
+    def mqtt_loop
+      loop_read
+      loop_write
+      loop_misc
+    end
+
+    def loop_read(max_message=10)
+      counter_message = 0
+      while !@client.queue_empty? && counter_message <= max_message
+        message = get_packet
+        ### Fitlering message if matching to filtered topic
+        topic = message.topic
+        if @filtered_topics.key?(topic)
+          callback = @filtered_topics[topic]
+          callback.call(message)
+        else
+          on_message_callback(message)
+        end
+        counter_message += 1
+      end
     end
 
     def on_message=(callback)
@@ -166,7 +159,7 @@ module Adapters
 
     def remove_callback_filter_topic(topic)
       if @filtered_topics.key(topic)
-        @filtered_topics.delete("#{topic}")
+        @filtered_topics.delete(topic)
       end
     end
 
@@ -191,12 +184,19 @@ module Adapters
       block.call()
     end
 
+    def loop_write
+    end
+
+    def loop_misc
+    end
+
     #################################################
     #################################################
     #################################################
 
     private
 
+    ### ONly for test
     def fake_handler(*args)
       func = @on_test
       on_test(*args, &func)

@@ -1,5 +1,4 @@
-$LOAD_PATH << '~/Iot_raspberry_pi/MqttManager/'
-
+$LOAD_PATH << ENV['AWS_IOT_SDK_RUBY_PATH']
 
 require "mqtt_manager"
 require "shadow_topic_manager"
