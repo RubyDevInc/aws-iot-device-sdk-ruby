@@ -164,44 +164,5 @@ module Adapters
         @filtered_topics.delete(topic)
       end
     end
-
-    #################################################
-    ###################### WIP ######################
-    #################################################
-
-    def on_connect=
-        block.call()
-    end
-
-    def on_disconnect
-      block.call()
-    end
-
-
-    def on_publish(&block)
-      block.call()
-    end
-
-    def on_subscribe(&block)
-      block.call()
-    end
-
-    def loop_write
-    end
-
-    def loop_misc
-    end
-
-    #################################################
-    #################################################
-    #################################################
-
-    private
-
-    ### ONly for test
-    def fake_handler(*args)
-      func = @on_test
-      on_test(*args, &func)
-    end
   end
 end

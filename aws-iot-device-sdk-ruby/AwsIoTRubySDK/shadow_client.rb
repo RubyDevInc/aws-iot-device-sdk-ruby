@@ -1,4 +1,4 @@
-$LOAD_PATH << ENV['AWS_IOT_SDK_RUBY_PATH']
+LOAD_PATH << ENV['AWS_IOT_SDK_RUBY_PATH']
 
 require 'mqtt_manager'
 require 'shadow_topic_manager'
@@ -6,7 +6,7 @@ require 'shadow_action_manager'
 
 class ShadowClient
   attr_accessor :action_manager
-  
+
   def initialize
     @mqtt_client = MqttManager::MqttManager.new
   end
@@ -27,11 +27,11 @@ class ShadowClient
   def get_shadow(callback=nil, timeout=5)
     @action_manager.shadow_get(callback, timeout)
   end
-  
+
   def update_shadow(payload, callback=nil, timeout=5)
     @action_manager.shadow_update(payload, callback, timeout)
   end
-  
+
   def delete_shadow(callback=nil, timeout=5)
     @action_manager.shadow_delete(callback, timeout)
   end
@@ -43,7 +43,7 @@ class ShadowClient
   def remove_shadow_delta_callback
     @action_manager.remove_shadow_delta_callback
   end
-  
+
   def disconnect
     @mqtt_client.disconnect
   end
@@ -55,5 +55,4 @@ class ShadowClient
   def configure_credentials(ca_file, key, cert)
     @mqtt_client.config_ssl_context(ca_file, key, cert)
   end
-
 end

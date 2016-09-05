@@ -193,8 +193,7 @@ class ShadowActionManager
       end
       @topic_manager.shadow_topic_publish(@shadow_name, "get", json_payload)
       @token_pool[current_token] = timer
-      Thread.new{ puts "STARTING TIMER FOR TOKEN #{current_token} GET\n"; timer.wait }
-      #Thread.new{ timer.wait }
+      Thread.new{ timer.wait }
       current_token
     }
   end
@@ -219,7 +218,6 @@ class ShadowActionManager
       end
       @topic_manager.shadow_topic_publish(@shadow_name, "update", json_payload)
       @token_pool[current_token] = timer
-      #      Thread.new{ puts "STARTING TIMER FOR TOKEN #{current_token} UPDATE\n"; timer.wait }
       Thread.new{ timer.wait }
       current_token
     }
@@ -244,7 +242,6 @@ class ShadowActionManager
       end
       @topic_manager.shadow_topic_publish(@shadow_name, "delete", json_payload)
       @token_pool[current_token] = timer
-      #    Thread.new{ puts "STARTING TIMER FOR TOKEN #{current_token} DELETE\n"; timer.wait }
       Thread.new{ timer.wait }
       current_token
     }
