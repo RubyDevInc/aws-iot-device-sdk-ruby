@@ -138,7 +138,7 @@ module MqttManager
       ret = false
       @mutex_subscribe.synchronize {
         ### TODO: add set_callback to topic
-        @client.add_callback_filter_topic(topic, callback) unless callback.nil?
+        @client.add_callback_filter_topic(topic, callback)
         rc = @client.subscribe(topic)
         ### TODO: add subscirbe callback && suback management
         rc = 0
@@ -153,7 +153,7 @@ module MqttManager
       end
       ret = false
       @mutex_unsubscribe.synchronize{
-        @client.remove_callback_filter(topic)
+        @client.remove_callback_filter_topic(topic)
         rc = @client.unsubscribe(topic)
         ### TODO: add unsubscribe && unsuback management
         rc = 0

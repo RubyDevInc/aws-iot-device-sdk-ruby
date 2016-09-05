@@ -132,7 +132,7 @@ module Adapters
         ### Fitlering message if matching to filtered topic
         topic = message.topic
         if @filtered_topics.key?(topic)
-          callback = @filtered_topics[topic]
+          callback = @filtered_topics[topic] 
           callback.call(message)
         else
           on_message_callback(message)
@@ -152,8 +152,10 @@ module Adapters
     end
 
     def add_callback_filter_topic(topic, callback)
-      if callback.is_a? Proc
+      unless callback.nil?
         @filtered_topics[topic] = callback
+      else
+        @filtered_topic.delete(topic)
       end
     end
 

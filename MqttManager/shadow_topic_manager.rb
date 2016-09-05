@@ -81,12 +81,12 @@ module MqttManager
 
     def shadow_topic_unsubscribe(shadow_name, shadow_action)
       @sub_unsub_mutex.synchronize(){
-        topic = TopicBuilder.new(shadow_name, shadow_name)
-        if topic.is_delta?(action_name)
+        topic = TopicBuilder.new(shadow_name, shadow_action)
+        if topic.is_delta?(shadow_name)
           @mqtt_manager.unsubscribe(topic.get_topic_delta)
         else
           @mqtt_manager.unsubscribe(topic.get_topic_accepted)
-          @mqtt_manager.unsubscribe(topic.get_topic_refused)
+          @mqtt_manager.unsubscribe(topic.get_topic_rejected)
         end
       }
     end
