@@ -1,5 +1,5 @@
 require 'aws_iot/mqtt_shadow_client/mqtt_manager'
-require 'aws_iot/mqtt_shadow_client/topic_manager'
+require 'aws_iot/mqtt_shadow_client/shadow_topic_manager'
 require 'aws_iot/mqtt_shadow_client/shadow_action_manager'
 
 module AwsIot
@@ -16,7 +16,7 @@ module AwsIot
       end
 
       def topic_manager
-        @topic_manager = MqttManager::TopicManager.new(@mqtt_client)
+        @topic_manager = MqttManager::ShadowTopicManager.new(@mqtt_client)
       end
 
       def create_shadow_handler_with_name(shadow_name, is_persistent_subscribe=false)

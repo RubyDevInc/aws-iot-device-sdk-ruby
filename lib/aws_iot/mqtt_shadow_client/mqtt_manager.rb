@@ -58,7 +58,7 @@ module AwsIot
       end
 
       def create_mqtt_adapter(*args)
-        @client = MqttAdapter.adapter.new(*args)
+        @client = MqttAdapter::Client.new(*args)
       end
 
       def on_message_callback(message)

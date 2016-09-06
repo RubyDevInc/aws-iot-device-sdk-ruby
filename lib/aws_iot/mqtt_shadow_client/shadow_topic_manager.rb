@@ -2,7 +2,7 @@ require 'aws_iot/mqtt_shadow_client/topic_builder'
 
 module AwsIot
   module MqttShadowClient
-    class TopicManager
+    class ShadowTopicManager
 
       def initialize(mqtt_manager)
         if mqtt_manager.nil?
