@@ -11,9 +11,10 @@ Ruby gems:
 
 ## Installation
 
-The project is still an alpha version and until its gem release,  it should be download and install from sources.
-
-< github link>
+The project is still a beta version and until its gem release, it should be download and installed from sources.
+```
+git clone https://github.com/RubyDevInc/aws-iot-device-sdk-ruby.git
+```
 
 In order to use the SDK, the `LOAD_PATH` should be updated. It could be done by adding a new path to the `RUBYLIB` variable as in the following command.
 ```bash
