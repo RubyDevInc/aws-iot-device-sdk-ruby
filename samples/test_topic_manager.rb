@@ -1,5 +1,4 @@
-require "mqtt_manager"
-require "shadow_topic_manager"
+require "aws_iot"
 
 manager = MqttManager::MqttManager.new(host: "a15ipmbgzhr3uc.iot.ap-northeast-1.amazonaws.com",
                              port: 8883,
