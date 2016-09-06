@@ -186,7 +186,6 @@ class ShadowActionManager
       timer.after(timeout){ timeout_manager(:get, current_token) }
       @payload_parser.set_attribute_value("clientToken",current_token)
       json_payload = @payload_parser.get_json
-      puts "SKIP SUBSCRIBE?: #{@is_subscribed[:get]}"
       unless @is_subscribed[:get]
         @topic_manager.shadow_topic_subscribe(@shadow_name, "get", @default_callback)
         @is_subscribed[:get] = true

@@ -24,7 +24,7 @@ n = 1
 3.times do
   puts "Start shadow_delete\n"
   cli.shadow_delete(filter_callback, 5)
-  json_payload = "{\"state\":{\"desired\":{\"property\":\"RubySDK\"}}}"
+  json_payload = '{"state":{"desired":{"property":"RubySDK"}}}'
   cli.shadow_update(json_payload, nil, 5)
   n += 1
 end
