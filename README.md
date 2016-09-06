@@ -15,6 +15,7 @@ Ruby gems:
 - timers ~> 4.1
 
 ## Introduction
+<<<<<<< 775f8ac7eb2da0c64ab9786514d6453a11b54ee4
 The AWS IoT SDK for Ruby is a gems which enables to manage device registered as shadow/things on the AWS IoT platform. A shadow is a JSON document that describes the state of a associated thing(app, device, sensor,...). The JSON document is divided in two part, the desired and the reported state of the thing. Three operations could be done on the Shadow: 
 - Get: read the current state of the shadow
 - Update: add, change or remove the attribute value of the shadow
@@ -34,6 +35,7 @@ gem install aws_iot_device
 - From sources:
 
 The gem could be download and installed manually:
+
 ```
 git clone https://github.com/RubyDevInc/aws-iot-device-sdk-ruby.git
 cd aws-iot-device-sdk-ruby
