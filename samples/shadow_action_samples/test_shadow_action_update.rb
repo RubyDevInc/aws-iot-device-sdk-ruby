@@ -1,11 +1,57 @@
 require 'aws_iot_device'
+require 'optparse'
 
-mqtt_client = AwsIotDevice::MqttShadowClient::MqttManager.new(host: "a2perapdhhaey0.iot.ap-northeast-1.amazonaws.com",
-                             port: 8883,
+options = {}
+
+OptionParser.new do |opts|
+  opts.banner = "Basic usage basic_greeting.rb -c \"YOUR_CERTIFICATE_PATH\" -k \"YOUR_KEY_FILE_PATH\" -ca \"YOUR_ROOT_CA_PATH -H \"YOUR_ENDPOINT\" -p 8883\n"  
+  opts.separator ""
+  opts.separator "Common options"
+  opts.on_tail("-h", "--help", "--usage", "Show this message") do
+    puts opts
+    exit
+  end
+
+  opts.on("-H", "--host [END_POINT]", "The endpoint where you want to connect") do |host|
+    options[:host] = host
+  end
+
+  opts.on("-p", "--port [MQTT_PORT]", "The port used for the connection Default is 8883") do |port|
+    options[:port] = port
+  end
+
+  opts.on("-c", "--cert [CERT_FILE_PATH]", "The path to the certificate file of the private key.") do |cert|
+    options[:cert] = cert
+  end
+
+  opts.on("-k", "--key [KEY_FILE_PATH]", "The path to private key file that would be used for encryption") do |key|
+    options[:key] = key
+  end
+
+  opts.on("-a", "--root_ca [ROOT_CA_PATH]", "The path to the authority certification file") do |root_ca|
+    options[:root_ca] = root_ca
+  end
+
+  opts.on("-t", "--thing [THING_NAME]", "The Thing name on which the action would be done") do |thing|
+    options[:things] = thing
+  end
+end.parse!(ARGV)
+
+
+host = options[:host]
+port = options[:port] || 8883
+cert_file_path = options[:cert]
+key_file_path = options[:key]
+ca_file_path = options[:root_ca]
+thing = options[:things]
+
+mqtt_client = AwsIotDevice::MqttShadowClient::MqttManager.new(host: host,
+                             port: port,
                              ssl: true,
-                             cert_file: "/Users/Pierre/certs/certificate.pem.crt",
-                             key_file: "/Users/Pierre/certs/private.pem.key",
-                             ca_file: "/Users/Pierre/certs/root-CA.crt")
+                             cert_file: cert_file_path,
+                             key_file: key_file_path,
+                             ca_file: ca_file_path)
+
 mqtt_client.connect
 
 filter_callback = Proc.new do |message|
@@ -16,7 +62,7 @@ timeout = 5
 
 topic_manager = AwsIotDevice::MqttShadowClient::ShadowTopicManager.new(mqtt_client)
 
-client = AwsIotDevice::MqttShadowClient::ShadowActionManager.new("MyRasPi", topic_manager, false)
+client = AwsIotDevice::MqttShadowClient::ShadowActionManager.new(thing, topic_manager, false)
 
 client.register_shadow_delta_callback(filter_callback)
 
