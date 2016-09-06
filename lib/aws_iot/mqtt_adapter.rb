@@ -1,4 +1,5 @@
 require 'facets'
+require 'aws_iot/mqtt_adapter/client'
 
 module AwsIot
   module MqttAdapter

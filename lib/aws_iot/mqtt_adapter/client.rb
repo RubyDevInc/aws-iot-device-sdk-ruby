@@ -1,6 +1,6 @@
 module AwsIot
   module MqttAdapter
-    class MqttAdapter
+    class Client
 
       attr_reader :client_id
 
@@ -17,7 +17,7 @@ module AwsIot
       ### The client is then initialize with the client type of the third librairy of the adapter.
       ### @client default type is MQTT::Client
       def initialize(*args)
-        @adapter = ::MqttAdapterLib.adapter.new(*args)
+        @adapter = MqttAdapter.adapter.new(*args)
       end
 
       def client_id
