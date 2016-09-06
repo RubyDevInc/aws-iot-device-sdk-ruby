@@ -74,7 +74,7 @@ my_shadow_client.get_shadow(nil, time_out)
 my_shadow_client.delete_shadow(callback, time_out)
 
 ### Update need a formated payload:
-payload = '{"state":{"desired":{"attr1":"foo"}}}' 
+payload = '{ "state":{ "desired":{ "attr1":"foo" }}}' 
 my_shadow_client.update_shadow(payload, callback, time_out)
 ```
 
