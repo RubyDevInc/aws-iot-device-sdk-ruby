@@ -16,7 +16,7 @@ module AwsIot
       end
 
       def topic_manager
-        @topic_manager = MqttManager::ShadowTopicManager.new(@mqtt_client)
+        @topic_manager = ShadowTopicManager.new(@mqtt_client)
       end
 
       def create_shadow_handler_with_name(shadow_name, is_persistent_subscribe=false)
