@@ -28,7 +28,7 @@ bundle install
 ## Using the ShadowClient
 Some examples files are provided in the samples directory. They could be run by the following command:
 ```bash
-ruby -I lib "path to sdk "/samples/"example_file".rb -c "path to certificate" -a "path to authority certificate" -k "path to key" -H "aws endpoint URI" -t "thing name"
+ruby -I lib "sample_file".rb -c "path to certificate" -a "path to authority certificate" -k "path to key" -H "aws endpoint URI" -t "thing name"
 ```
 
 ### Shadow Client
@@ -107,7 +107,7 @@ mqtt_manager = AwsIotDevice::MqttShadowClient::MqttManager.new(host,
 
 mqtt_manager.connect
 
-manager = AwsIotDevice::MqttShadowClient::TopicManager.new(mqtt_manager)
+manager = AwsIotDevice::MqttShadowClient::ShadowTopicManager.new(mqtt_manager)
 
 ### ACTION_NAME among "get", "update", "delete"
 manager.shadow_topic_publish(shadow_name, shadow_action, payload)
