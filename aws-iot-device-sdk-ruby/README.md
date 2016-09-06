@@ -67,14 +67,14 @@ callback = Proc.new do |message|
 end
 ### The  three basic AWS Iot operation:
 ### time_out is a integer reprensenting the time to keep request alive in second
-my_shadow_client.get_shadow(callback, "TIME_OUT")
+my_shadow_client.get_shadow(callback, time_out)
 # or without special callback 
-my_shadow_client.get_shadow(nil, "TIME_OUT")
+my_shadow_client.get_shadow(nil, time_out)
 
 my_shadow_client.delete_shadow(callback, time_out)
 
 ### Update need a formated payload:
-payload = "{\"state\":{\"desired\":{\"attr1\":\"foo\"}}}" 
+payload = '{ "state":{ "desired":{ "attr1":"foo" }}}' 
 my_shadow_client.update_shadow(payload, callback, time_out)
 ```
 
