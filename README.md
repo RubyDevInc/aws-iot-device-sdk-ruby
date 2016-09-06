@@ -18,7 +18,7 @@ The AWS IoT SDK for Ruby is a gems which enables to manage device registered as 
 The client communicates with the AWS IoT platform through the MQTT protocol. An adapter is provided to enable several implementations of the mqtt protocol and thus make the client independent form its back-end library implementation. In the current version, the default settings are using a client based on the ruby-mqtt gems. According to the shadow management, the operations are performed by sending message on the dedicated MQTT topics. The answer could be read on the corresponding MQTT topics, then some treatments could be processed thanks to a system of callback.
 
 ## Installation
-The projects is still in a beta version, and the gem should be download and installed manually:
+The project is still in a beta version, the gem should be download and installed manually:
 ```
 git clone https://github.com/RubyDevInc/aws-iot-device-sdk-ruby.git
 cd aws-iot-device-sdk-ruby
@@ -26,7 +26,7 @@ bundle install
 ```
 
 ## Using the ShadowClient
-Some example files are provided in the samples directory. They could be run by the following command.
+Some examples files are provided in the samples directory. They could be run by the following command:
 ```bash
 ruby -I lib "path to sdk "/samples/"example_file".rb -c "path to certificate" -a "path to authority certificate" -k "path to key" -H "aws endpoint URI" -t "thing name"
 ```
