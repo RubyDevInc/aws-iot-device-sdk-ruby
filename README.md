@@ -107,7 +107,7 @@ mqtt_manager = AwsIotDevice::MqttShadowClient::MqttManager.new(host,
 
 mqtt_manager.connect
 
-manager = AwsIotDevice::MqttShadowClient::TopicManager.new(mqtt_manager)
+manager = AwsIotDevice::MqttShadowClient::ShadowTopicManager.new(mqtt_manager)
 
 ### ACTION_NAME among "get", "update", "delete"
 manager.shadow_topic_publish(shadow_name, shadow_action, payload)
