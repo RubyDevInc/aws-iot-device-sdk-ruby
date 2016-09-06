@@ -1,18 +1,18 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'aws_iot/version'
+require 'aws_iot_device/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "aws_iot"
-  spec.version       = AwsIot::VERSION
+  spec.name          = "aws_iot_device"
+  spec.version       = AwsIotDevice::VERSION
   spec.authors       = ["Pierre Goudet"]
   spec.email         = ["p-goudet@ruby-dev.jp"]
 
-  spec.summary       = %q{TODO: Write a short summary, because Rubygems requires one.}
-  spec.description   = %q{TODO: Write a longer description or delete this line.}
-  spec.homepage      = "TODO: Put your gem's website or public repo URL here."
-  spec.license       = "MIT"
+  spec.summary       = %q{A gem use to communicates with the Aws Iot platform through the MQTT protocol}
+  spec.description   = %q{A gem use to communicates with the Aws Iot platform through the MQTT protocol}
+  spec.homepage      = "https://github.com/RubyDevInc/aws-iot-device-sdk-ruby"
+  spec.license       = "Apache 2.0"
 
   # Prevent pushing this gem to RubyGems.org by setting 'allowed_push_host', or
   # delete this section to allow pushing this gem to any host.

@@ -1,6 +1,6 @@
-require 'aws_iot/mqtt_shadow_client/topic_builder'
+require 'aws_iot_device/mqtt_shadow_client/topic_builder'
 
-module AwsIot
+module AwsIotDevice
   module MqttShadowClient
     class ShadowTopicManager
 

@@ -2,10 +2,10 @@ require 'securerandom'
 require 'timers'
 require 'thread'
 require 'json'
-require 'aws_iot/mqtt_shadow_client/token_creator'
-require 'aws_iot/mqtt_shadow_client/json_payload_parser'
+require 'aws_iot_device/mqtt_shadow_client/token_creator'
+require 'aws_iot_device/mqtt_shadow_client/json_payload_parser'
 
-module AwsIot
+module AwsIotDevice
   module MqttShadowClient
     class ShadowActionManager
       ### This the main AWS action manager

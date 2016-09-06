@@ -1,7 +1,7 @@
 require 'mqtt'
 require 'thread'
 
-module AwsIot
+module AwsIotDevice
   module MqttAdapter
     class RubyMqttAdapter
 

@@ -1,4 +1,4 @@
-require 'aws_iot'
+require 'aws_iot_device'
 require 'optparse'
 
 options = {}
@@ -41,14 +41,14 @@ cert_file_path = options[:cert]
 key_file_path = options[:key]
 ca_file_path = options[:root_ca] 
 
-client = AwsIot::MqttShadowClient::MqttManager.new(host: host,
+client = AwsIotDevice::MqttShadowClient::MqttManager.new(host: host,
                              port: port,
                              ssl: true,
                              cert_file: cert_file_path,
                              key_file: key_file_path,
                              ca_file: ca_file_path)
 
-client2 = AwsIot::MqttShadowClient::MqttManager.new
+client2 = AwsIotDevice::MqttShadowClient::MqttManager.new
 
 client2.config_endpoint(host, port)
 client2.ssl = true

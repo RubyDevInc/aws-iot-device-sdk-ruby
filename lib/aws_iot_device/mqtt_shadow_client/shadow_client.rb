@@ -1,8 +1,8 @@
-require 'aws_iot/mqtt_shadow_client/mqtt_manager'
-require 'aws_iot/mqtt_shadow_client/shadow_topic_manager'
-require 'aws_iot/mqtt_shadow_client/shadow_action_manager'
+require 'aws_iot_device/mqtt_shadow_client/mqtt_manager'
+require 'aws_iot_device/mqtt_shadow_client/shadow_topic_manager'
+require 'aws_iot_device/mqtt_shadow_client/shadow_action_manager'
 
-module AwsIot
+module AwsIotDevice
   module MqttShadowClient
     class ShadowClient
       attr_accessor :action_manager

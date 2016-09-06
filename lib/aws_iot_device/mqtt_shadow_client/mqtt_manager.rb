@@ -1,6 +1,6 @@
 require 'thread'
 
-module AwsIot
+module AwsIotDevice
   module MqttShadowClient
     class MqttManager
 

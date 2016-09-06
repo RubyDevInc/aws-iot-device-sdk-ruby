@@ -1,6 +1,6 @@
-require "aws_iot"
+require "aws_iot_device"
 
-manager = AwsIot::MqttShadowClient::MqttManager.new(host: "a15ipmbgzhr3uc.iot.ap-northeast-1.amazonaws.com",
+manager = AwsIotDevice::MqttShadowClient::MqttManager.new(host: "a15ipmbgzhr3uc.iot.ap-northeast-1.amazonaws.com",
                              port: 8883,
                              ssl: true,
                              cert_file: "/Users/Pierre/certs/certificate.pem.crt",
@@ -9,7 +9,7 @@ manager = AwsIot::MqttShadowClient::MqttManager.new(host: "a15ipmbgzhr3uc.iot.ap
 
 manager.connect
 
-cli = AwsIot::MqttShadowClient::ShadowTopicManager.new(manager)
+cli = AwsIotDevice::MqttShadowClient::ShadowTopicManager.new(manager)
 
 filter_callback = Proc.new do |message|
   puts "Received (through filtered callback) : "

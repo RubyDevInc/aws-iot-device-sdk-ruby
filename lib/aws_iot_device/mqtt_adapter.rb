@@ -1,7 +1,7 @@
 require 'facets'
-require 'aws_iot/mqtt_adapter/client'
+require 'aws_iot_device/mqtt_adapter/client'
 
-module AwsIot
+module AwsIotDevice
   module MqttAdapter
     extend self
 
@@ -18,7 +18,7 @@ module AwsIot
       case adapter_lib
       when Symbol, String
         begin
-          require "aws_iot/mqtt_adapter/#{adapter_lib}"
+          require "aws_iot_device/mqtt_adapter/#{adapter_lib}"
         rescue LoadError
           raise "LoadError: Could find adapters for the lib #{adapter_lib}"
           exit

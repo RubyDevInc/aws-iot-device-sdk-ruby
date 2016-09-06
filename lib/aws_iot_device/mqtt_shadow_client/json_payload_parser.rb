@@ -3,7 +3,7 @@ require 'timers'
 require 'thread'
 require 'json'
 
-module AwsIot
+module AwsIotDevice
   module MqttShadowClient
     class JSONPayloadParser
       ### This class acts as Basic JSON parser.

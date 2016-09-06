@@ -1,4 +1,4 @@
-module AwsIot
+module AwsIotDevice
   module MqttShadowClient
     class TopicBuilder
       ACTION_NAME = %w(get update delete delta).freeze

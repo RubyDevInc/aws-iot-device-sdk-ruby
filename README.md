@@ -48,7 +48,7 @@ time_out = 5
 
 ### Create and set up a ShadowClient
 
-my_shadow_client = AwsIot::MqttShadowClient::ShadowClient.new
+my_shadow_client = AwsIotDevice::MqttShadowClient::ShadowClient.new
 my_shadow_client.configure_endpoint(host, port)
 my_shadow_client.configure_credentials(root_ca_path, private_key_path, certificate_path)
 
@@ -59,7 +59,7 @@ my_shadow_client.create_shadow_handler_with_name("YOUR_THING_NAME", false)
 callback = Proc.new do |message|
     puts "Special callback for the topic #{message.topic}"
 end
-### The  three basic AWS Iot operation:
+### The  three basic AWS Iot operations:
 ### time_out is a integer reprensenting the time to keep request alive in second
 my_shadow_client.get_shadow(callback, time_out)
 # or without special callback 
@@ -98,7 +98,7 @@ ssl = true
 host = "ENDPOINT_URI_ON_AWS"
 port = 8883 #default port of MQTT protocol
 
-mqtt_manager = AwsIot::MqttShadowClient::MqttManager.new(host,
+mqtt_manager = AwsIotDevice::MqttShadowClient::MqttManager.new(host,
                              port,
                              ssl,
                              certificate_path,
@@ -107,7 +107,7 @@ mqtt_manager = AwsIot::MqttShadowClient::MqttManager.new(host,
 
 mqtt_manager.connect
 
-manager = AwsIot::MqttShadowClient::TopicManager.new(mqtt_manager)
+manager = AwsIotDevice::MqttShadowClient::TopicManager.new(mqtt_manager)
 
 ### ACTION_NAME among "get", "update", "delete"
 manager.shadow_topic_publish(shadow_name, shadow_action, payload)
@@ -123,10 +123,10 @@ The ShadowActionManager enable to the client to perform the basic action on the 
 ```ruby
 ### Directly create the ShadowManagerAction
 ### SUBSRIBE_MODE is a boolean, 'true'  for persistent mode and (default)'false'  for not-persistent 
-client = AwsIot::MqttShadowClient::ShadowActionManager.new("THING_NAME", "TOPIC_MANGER", "SUBSCRIBE_MODE")
+client = AwsIotDevice::MqttShadowClient::ShadowActionManager.new("THING_NAME", "TOPIC_MANGER", "SUBSCRIBE_MODE")
 
 ### Or through a ShadowClient  object
-my_shadow_client = AwsIot::MqttShadowClient::ShadowClient.new
+my_shadow_client = AwsIotDevice::MqttShadowClient::ShadowClient.new
 client = my_shadow_client.create_shadow_handler_with_name("THING_NAME", "SUBSCRIBE_MODE")
 
 ### The three basic action: 
@@ -139,7 +139,7 @@ The MQTTManager class support the operation related with the mqtt protocol, it i
 ```ruby
 ### There two way to initiate the object :
 # 1) Send parameter when creating the object and connect
-client = AwsIot::MqttShadowClient::MqttManager.new(host: "YOUR_AWS_ENDPOINT",
+client = AwsIotDevice::MqttShadowClient::MqttManager.new(host: "YOUR_AWS_ENDPOINT",
                              port: 8883,
                              ssl: true,
                              cert_file: "YOUR_CERT_FILE_PATH",
@@ -147,7 +147,7 @@ client = AwsIot::MqttShadowClient::MqttManager.new(host: "YOUR_AWS_ENDPOINT",
                              ca_file: "YOUR_ROOT_CA_FILE_PATH")
 
 # 2) A step by step initialization
-client = AwsIot::MqttShadowClient::MqttManager.new()
+client = AwsIotDevice::MqttShadowClient::MqttManager.new()
 client.host =  "YOUR_AWS_ENDPOINT"
 client.ssl = true
 client.port = 8883

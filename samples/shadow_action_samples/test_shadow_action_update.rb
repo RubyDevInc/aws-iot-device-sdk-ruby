@@ -1,6 +1,6 @@
-require 'aws_iot'
+require 'aws_iot_device'
 
-mqtt_client = AwsIot::MqttShadowClient::MqttManager.new(host: "a2perapdhhaey0.iot.ap-northeast-1.amazonaws.com",
+mqtt_client = AwsIotDevice::MqttShadowClient::MqttManager.new(host: "a2perapdhhaey0.iot.ap-northeast-1.amazonaws.com",
                              port: 8883,
                              ssl: true,
                              cert_file: "/Users/Pierre/certs/certificate.pem.crt",
@@ -14,9 +14,9 @@ end
 
 timeout = 5
 
-topic_manager = AwsIot::MqttShadowClient::ShadowTopicManager.new(mqtt_client)
+topic_manager = AwsIotDevice::MqttShadowClient::ShadowTopicManager.new(mqtt_client)
 
-client = AwsIot::MqttShadowClient::ShadowActionManager.new("MyRasPi", topic_manager, false)
+client = AwsIotDevice::MqttShadowClient::ShadowActionManager.new("MyRasPi", topic_manager, false)
 
 client.register_shadow_delta_callback(filter_callback)
 

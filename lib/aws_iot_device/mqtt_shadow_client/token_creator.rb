@@ -3,7 +3,7 @@ require 'timers'
 require 'thread'
 require 'json'
 
-module AwsIot
+module AwsIotDevice
   module MqttShadowClient
     class TokenCreator
       ### This class manage the clients token.

@@ -1,4 +1,4 @@
-require 'aws_iot'
+require 'aws_iot_device'
 
 root_ca_path = "/Users/Pierre/certs/root-CA.crt"
 private_key_path = "/Users/Pierre/certs/private.pem.key"
@@ -7,7 +7,7 @@ certificate_path = "/Users/Pierre/certs/certificate.pem.crt"
 host = "a2perapdhhaey0.iot.ap-northeast-1.amazonaws.com"
 port = 8883
 
-my_shadow_client = AwsIot::MqttShadowClient::ShadowClient.new
+my_shadow_client = AwsIotDevice::MqttShadowClient::ShadowClient.new
 my_shadow_client.configure_endpoint(host, port)
 my_shadow_client.configure_credentials(root_ca_path, private_key_path, certificate_path)
 
