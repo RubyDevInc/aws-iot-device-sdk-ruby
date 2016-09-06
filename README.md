@@ -10,12 +10,12 @@ Ruby gems:
 - timers ~> 4.1
 
 ## Introduction
-The AWS IoT SDK for Ruby is a gems which enables to manage device registered as shadow/things on the AWS IoT platform. A shadow is a JSON document that describe the state of thing(app, device, sensor,...). The JSON document representing the state of the shadow is split in two part, the desired and the reported state of the thing. Three operations could be  done on the Shadow: 
+The AWS IoT SDK for Ruby is a gems which enables to manage device registered as shadow/things on the AWS IoT platform. A shadow is a JSON document that describes the state of a associated thing(app, device, sensor,...). The JSON document is divided in two part, the desired and the reported state of the thing. Three operations could be done on the Shadow: 
 - Get: read the current state of the shadow
 - Update: add, change or remove the attribute value of the shadow
 - Delete: clear all the attribute value of the shadow
 
-The client communicates with the AWS IoT platform through the MQTT protocol. An adapter pattern is provided to allow several implementation of the mqtt client and thus make the client independent form its back-end library implementation. In the current version, the default settings are using a client based on the ruby-mqtt gems.  According to the shadow management, operations are performed by sending message on the dedicated MQTT topics. The answer could be read on the corresponding MQTT topics, then some treatment could be process thanks to a system of callback.
+The client communicates with the AWS IoT platform through the MQTT protocol. An adapter is provided to enable several implementations of the mqtt protocol and thus make the client independent form its back-end library implementation. In the current version, the default settings are using a client based on the ruby-mqtt gems. According to the shadow management, the operations are performed by sending message on the dedicated MQTT topics. The answer could be read on the corresponding MQTT topics, then some treatments could be processed thanks to a system of callback.
 
 ## Installation
 The projects is still in a beta version, and the gem should be download and installed manually:
