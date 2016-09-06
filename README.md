@@ -9,19 +9,6 @@ Ruby gems:
 - facets ~> 3.1
 - timers ~> 4.1
 
-## Installation
-
-The project is still a beta version and until its gem release, it should be download and installed from sources.
-```
-git clone https://github.com/RubyDevInc/aws-iot-device-sdk-ruby.git
-```
-
-In order to use the SDK, the `LOAD_PATH` should be updated. It could be done by adding a new path to the `RUBYLIB` variable as in the following command.
-```bash
-export RUBYLIB=$RUBYLIB:"...path to sdk directory.../MqttAdapters":"path to sdk directory.../MqttShadowClient"
-```
-
-
 ## Introduction
 The AWS IoT SDK for Ruby is a gems which enables to manage device registered as shadow/things on the AWS IoT platform. A shadow is a JSON document that describe the state of thing(app, device, sensor,...). The JSON document representing the state of the shadow is split in two part, the desired and the reported state of the thing. Three operations could be  done on the Shadow: 
 - Get: read the current state of the shadow
@@ -30,10 +17,18 @@ The AWS IoT SDK for Ruby is a gems which enables to manage device registered as 
 
 The client communicates with the AWS IoT platform through the MQTT protocol. An adapter pattern is provided to allow several implementation of the mqtt client and thus make the client independent form its back-end library implementation. In the current version, the default settings are using a client based on the ruby-mqtt gems.  According to the shadow management, operations are performed by sending message on the dedicated MQTT topics. The answer could be read on the corresponding MQTT topics, then some treatment could be process thanks to a system of callback.
 
+## Installation
+The projects is still in a beta version, and the gem should be download and installed manually:
+```
+git clone https://github.com/RubyDevInc/aws-iot-device-sdk-ruby.git
+cd aws-iot-device-sdk-ruby
+bundle install
+```
+
 ## Using the ShadowClient
 Some example files are provided in the samples directory. They could be run by the following command.
 ```bash
-ruby "path to sdk "/samples/"example_file".rb -c "path to certificate" -a "path to authority certificate" -k "path to key" -H "aws endpoint URI" -t "thing name"
+ruby -I lib "path to sdk "/samples/"example_file".rb -c "path to certificate" -a "path to authority certificate" -k "path to key" -H "aws endpoint URI" -t "thing name"
 ```
 
 ### Shadow Client
