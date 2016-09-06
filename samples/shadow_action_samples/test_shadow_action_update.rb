@@ -1,12 +1,6 @@
-<<<<<<< 5fee5992114faab850734c0de4225d8704ac140f
-require "mqtt_manager"
-require "shadow_topic_manager"
-require "shadow_action_manager"
-=======
 require 'aws_iot'
->>>>>>> Update require path
 
-mqtt_client = MqttManager::MqttManager.new(host: "a2perapdhhaey0.iot.ap-northeast-1.amazonaws.com",
+mqtt_client = AwsIot::MqttShadowClient::MqttManager.new(host: "a2perapdhhaey0.iot.ap-northeast-1.amazonaws.com",
                              port: 8883,
                              ssl: true,
                              cert_file: "/Users/Pierre/certs/certificate.pem.crt",
@@ -20,9 +14,9 @@ end
 
 timeout = 5
 
-topic_manager = MqttManager::TopicManager.new(mqtt_client)
+topic_manager = AwsIot::MqttShadowClient::ShadowTopicManager.new(mqtt_client)
 
-client = ShadowActionManager.new("MyRasPi", topic_manager, false)
+client = AwsIot::MqttShadowClient::ShadowActionManager.new("MyRasPi", topic_manager, false)
 
 client.register_shadow_delta_callback(filter_callback)
 

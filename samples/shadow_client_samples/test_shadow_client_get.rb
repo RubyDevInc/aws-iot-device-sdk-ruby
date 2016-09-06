@@ -1,5 +1,3 @@
-puts $LOAD_PATH
-
 require 'aws_iot'
 #require 'shadow_client'
 require 'optparse'

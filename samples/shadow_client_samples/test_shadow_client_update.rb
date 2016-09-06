@@ -47,7 +47,7 @@ private_key_path = options[:key]
 root_ca_path = options[:root_ca] 
 thing = options[:things]
 
-my_shadow_client = AwsIot::ShadowClient.new
+my_shadow_client = AwsIot::MqttShadowClient::ShadowClient.new
 my_shadow_client.configure_endpoint(host, port)
 my_shadow_client.configure_credentials(root_ca_path, private_key_path, certificate_path)
 
