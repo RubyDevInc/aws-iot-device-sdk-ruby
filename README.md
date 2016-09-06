@@ -5,7 +5,6 @@
 
 # AWS IoT Device SDK for Ruby
 
-
 ## Requirements
 Ruby gems:
 - ruby ~> 2.2
