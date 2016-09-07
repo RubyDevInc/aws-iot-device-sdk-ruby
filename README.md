@@ -35,7 +35,7 @@ bundle install
 ## Using the ShadowClient
 Some examples files are provided in the samples directory. They could be run by the following command:
 ```bash
-# Including the local library
+# Including the local libraries
 ruby -I lib "sample_file".rb -c "path to certificate" -a "path to authority certificate" -k "path to key" -H "aws endpoint URI" -t "thing name"
 
 # or form the bundle command
