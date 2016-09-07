@@ -33,12 +33,19 @@ bundle install
 ```
 
 ## Using the ShadowClient
-Some examples files are provided in the samples directory. They could be run by the following command:
+Some examples files are provided in the samples directory. They could be run by the following commands:
 ```bash
+### If the gem have been install with the `gem` command
+ruby "sample_file".rb -c "path to certificate" -a "path to authority certificate" -k "path to key" -H "aws endpoint URI" -t "thing name"
+
+
+### If the gem have been installed from sources  
 # Including the local libraries
 ruby -I lib "sample_file".rb -c "path to certificate" -a "path to authority certificate" -k "path to key" -H "aws endpoint URI" -t "thing name"
 
-# or form the bundle command
+# Or
+
+# With the bundle command 
 bundle exec ruby "sample_file".rb -c "path to certificate" -a "path to authority certificate" -k "path to key" -H "aws endpoint URI" -t "thing name"
 ```
 
