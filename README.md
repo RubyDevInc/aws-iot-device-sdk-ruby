@@ -20,12 +20,14 @@ The client communicates with the AWS IoT platform through the MQTT protocol. An 
 ## Installation
 The gem is still in a beta version. There is two way to install it, from the `gem` command or directly from sources.
 - From RubyGems:
+
 The gem may be find on [RubyGems](https://rubygems.org/gems/aws_iot_device) and installed with the following command:
 ```
 gem install aws_iot_device
 ```
 
-- From sources
+- From sources:
+
 The gem could be download and installed manually:
 ```
 git clone https://github.com/RubyDevInc/aws-iot-device-sdk-ruby.git
