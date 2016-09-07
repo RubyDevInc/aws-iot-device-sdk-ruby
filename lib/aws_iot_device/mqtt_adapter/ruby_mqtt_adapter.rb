@@ -107,7 +107,7 @@ module AwsIotDevice
       ############### Custom Features #################
 
       def loop_start
-        Thread.new{loop_forever}
+        Thread.new{ loop_forever }
       end
 
       def loop_stop(thread)
@@ -117,6 +117,7 @@ module AwsIotDevice
       def loop_forever
         loop do
           mqtt_loop
+          sleep 0.005
         end
       end
 
