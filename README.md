@@ -1,4 +1,4 @@
-# AWS IoT SDK for Ruby
+# AWS IoT Device SDK for Ruby
 
 
 ## Requirements
