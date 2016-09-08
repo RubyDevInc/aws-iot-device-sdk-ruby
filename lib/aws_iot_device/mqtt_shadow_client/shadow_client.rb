@@ -13,6 +13,13 @@ module AwsIotDevice
 
       def connect
         @mqtt_client.connect
+        if block_given?
+          begin
+            yield(self)
+          ensure
+            @mqtt_client.disconnect
+          end
+        end
       end
 
       def topic_manager
