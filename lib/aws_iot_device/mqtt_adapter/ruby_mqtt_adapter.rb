@@ -29,7 +29,7 @@ module AwsIotDevice
       end
 
       def connect(*args, &block)
-        client = create_client(*args) if @client.nil?
+        @client = create_client(*args) if @client.nil?
         @client.connect(&block)
         loop_start
       end

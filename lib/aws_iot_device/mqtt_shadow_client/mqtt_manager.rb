@@ -106,11 +106,10 @@ module AwsIotDevice
         }
       end
 
-      def subscribe(topic, qos=0, callback=nil)
+      def subscribe(topic, _qos=0, callback=nil)
         if topic.nil?
           raise "subscribe error: topic cannot be nil"
         end
-        ret = false
         @mutex_subscribe.synchronize {
           @client.add_callback_filter_topic(topic, callback)
           @client.subscribe(topic)

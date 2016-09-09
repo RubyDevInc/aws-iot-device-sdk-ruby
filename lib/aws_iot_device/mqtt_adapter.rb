@@ -21,7 +21,6 @@ module AwsIotDevice
           require "aws_iot_device/mqtt_adapter/#{adapter_lib}"
         rescue LoadError
           raise "LoadError: Could find adapters for the lib #{adapter_lib}"
-          exit
         end
         @adapter = MqttAdapter.const_get("#{adapter_lib.to_s.camelcase(:upper)}")
       else

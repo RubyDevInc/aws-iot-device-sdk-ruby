@@ -52,34 +52,13 @@ module AwsIotDevice
           if %w(get update delete).include?(action)
             token = @payload_parser.get_attribute_value("clientToken")
             if @token_pool.has_key?(token)
-              if type.eql?("accepted")
-                new_version = @payload_parser.get_attribute_value("version")
-                if new_version && new_version >= @last_stable_version
-                  type.eql?("delete") ? @last_stable_version = -1 : @last_stable_version = new_version
-                  Thread.new { @topic_subscribed_callback[action.to_sym].call(message) } unless @topic_subscribed_callback[action.to_sym].nil?
-                else
-                  puts "CATCH AN UPDATE BUT OUTDATED/INVALID VERSION (= #{new_version}) FOR TOKEN #{token}\n"
-                end
-              end
+              do_accepted(message, action.to_sym, type) if type.eql?("accepted")
               @token_pool[token].cancel
-              @token_pool.delete(token) 
-              @topic_subscribed_task_count[action.to_sym] -= 1
-              if @topic_subscribed_task_count[action.to_sym] <= 0
-                @topic_subscribed_task_count[action.to_sym] = 0
-                unless @persistent_subscribe
-                  @topic_manager.shadow_topic_unsubscribe(@shadow_name, action)
-                  @is_subscribed[action.to_sym] = false
-                end
-              end
+              @token_pool.delete(token)
+              decresase_task_count(action.to_sym)
             end
           elsif %w(delta).include?(action)
-            new_version = @payload_parser.get_attribute_value("version")
-            if new_version && new_version >= @last_stable_version
-              @last_stable_version = new_version
-              Thread.new { @topic_subscribed_callback[action.to_sym].call(message) } if @topic_subscribed_callback[action.to_sym]
-            else
-              puts "CATCH A DELTA BUT OUTDATED/INVALID VERSION (= #{new_version})\n"
-            end
+            do_delta(message, action.to_sym)
           end
         }
       end
@@ -214,6 +193,39 @@ module AwsIotDevice
       end
 
       private
+
+      def decresase_task_count(action)
+        @topic_subscribed_task_count[action] -= 1
+        if @topic_subscribed_task_count[action] <= 0
+          @topic_subscribed_task_count[action] = 0
+          unless @persistent_subscribe
+            @topic_manager.shadow_topic_unsubscribe(@shadow_name, action.to_s)
+            @is_subscribed[action] = false
+          end
+        end
+      end
+
+      # !!!!!!!!!!!!! SHOULD BE CALL CAREFULL AS USING SHARED RESSOURCES
+      def do_accepted(message, action, type)
+        new_version = @payload_parser.get_attribute_value("version")
+        if new_version && new_version >= @last_stable_version
+          type.eql?("delete") ? @last_stable_version = -1 : @last_stable_version = new_version
+          Thread.new { @topic_subscribed_callback[action].call(message) } unless @topic_subscribed_callback[action].nil?
+        else
+          puts "CATCH AN UPDATE BUT OUTDATED/INVALID VERSION (= #{new_version}) FOR TOKEN #{token}\n"
+        end
+      end
+
+      # !!!!!!!!!!!!! SHOULD BE CALL CAREFULL AS USING SHARED RESSOURCES
+      def do_detla(message, action)
+        new_version = @payload_parser.get_attribute_value("version")
+        if new_version && new_version >= @last_stable_version
+          @last_stable_version = new_version
+          Thread.new { @topic_subscribed_callback[action].call(message) } if @topic_subscribed_callback[action]
+        else
+          puts "CATCH A DELTA BUT OUTDATED/INVALID VERSION (= #{new_version})\n"
+        end
+      end
 
       def parse_shadow_name(topic)
         topic.split('/')[2]
