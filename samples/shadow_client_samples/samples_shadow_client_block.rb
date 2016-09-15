@@ -1,6 +1,5 @@
 require 'aws_iot_device'
 require 'optparse'
-require 'json'
 
 options = {}
 
@@ -44,39 +43,31 @@ host = options[:host]
 port = options[:port] || 8883
 certificate_path = options[:cert]
 private_key_path = options[:key]
-root_ca_path = options[:root_ca] 
+root_ca_path = options[:root_ca]
 thing = options[:things]
 
-my_shadow_client = AwsIotDevice::MqttShadowClient::ShadowClient.new
-my_shadow_client.configure_endpoint(host, port)
-my_shadow_client.configure_credentials(root_ca_path, private_key_path, certificate_path)
-
-my_shadow_client.connect
-
-my_shadow_client.create_shadow_handler_with_name(thing, true)
 
 filter_callback = Proc.new do |message|
   puts "Executing the specific callback for topic: #{message.topic}\n##########################################\n"
 end
 
-delta_callback = Proc.new do |delta|
-  message = JSON.parse(delta.payload)
-  puts "Catching a new message : #{message["state"]["message"]}\n##########################################\n"
+my_shadow_client = AwsIotDevice::MqttShadowClient::ShadowClient.new
+my_shadow_client.configure_endpoint(host, port)
+my_shadow_client.configure_credentials(root_ca_path, private_key_path, certificate_path)
+
+my_shadow_client.connect do |client|
+
+  my_shadow_client.create_shadow_handler_with_name(thing, true)
+
+  puts "##### Starting test_shadow_client_get ######"
+  my_shadow_client.get_shadow(filter_callback, 4)
+  sleep 5
+
+  puts "##### Starting test_shadow_client_get ######"
+  my_shadow_client.get_shadow(nil, 4) do { puts "CALLED FROM BLOCK" }
+  sleep 5
+
+  puts "##### Starting test_shadow_client_get ######"
+  my_shadow_client.get_shadow(filter_callback, 4)
+  sleep 5
 end
-
-my_shadow_client.register_delta_callback(delta_callback)
-
-n = 1
-3.times do
-  puts "Type the message that you want to register in the thing [#{thing}]:"
-  entry = $stdin.readline()
-  json_payload = "{\"state\":{\"desired\":{\"message\":\"#{entry.delete!("\n")}\"}}}"
-  my_shadow_client.update_shadow(json_payload, filter_callback, 5)
-  puts "#{3 - n} Message(s) left"
-  sleep 2
-  n += 1
-end
-
-sleep 3
-
-my_shadow_client.disconnect

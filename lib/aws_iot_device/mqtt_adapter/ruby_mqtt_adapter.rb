@@ -134,7 +134,7 @@ module AwsIotDevice
           ### Fitlering message if matching to filtered topic
           topic = message.topic
           if @filtered_topics.key?(topic)
-            callback = @filtered_topics[topic] 
+            callback = @filtered_topics[topic]
             callback.call(message)
           else
             on_message_callback(message)
@@ -154,7 +154,7 @@ module AwsIotDevice
       end
 
       def on_message_callback(message)
-        if @on_message.is_a? Proc
+        if @on_message.is_a?(Proc) || @on_message.lambda?
           @on_message.call(message)
         end
       end

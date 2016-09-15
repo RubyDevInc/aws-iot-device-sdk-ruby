@@ -58,7 +58,7 @@ module AwsIotDevice
               decresase_task_count(action.to_sym)
             end
           elsif %w(delta).include?(action)
-            do_delta(message, action.to_sym)
+            do_delta(message)
           end
         }
       end
@@ -78,8 +78,7 @@ module AwsIotDevice
                 @is_subscribed[action.to_sym] = false
               end
             end
-            unless @topic_subscribed_callback[action].blank?
-              puts "Shadow request with token: #{token} has timed out."
+            unless @topic_subscribed_callback[action].nil?
               @topic_subscribed_callback[action].call("REQUEST TIME OUT", "timeout", token)
             end
           end
@@ -217,11 +216,11 @@ module AwsIotDevice
       end
 
       # !!!!!!!!!!!!! SHOULD BE CALL CAREFULL AS USING SHARED RESSOURCES
-      def do_detla(message, action)
+      def do_delta(message)
         new_version = @payload_parser.get_attribute_value("version")
         if new_version && new_version >= @last_stable_version
           @last_stable_version = new_version
-          Thread.new { @topic_subscribed_callback[action].call(message) } if @topic_subscribed_callback[action]
+          Thread.new { @topic_subscribed_callback[:delta].call(message) } unless @topic_subscribed_callback[:delta].nil?
         else
           puts "CATCH A DELTA BUT OUTDATED/INVALID VERSION (= #{new_version})\n"
         end
