@@ -1,4 +1,9 @@
-# AWS IoT SDK for Ruby
+<a href="https://codeclimate.com/repos/57d10b3aaee68e0a2d0016b7/feed"><img src="https://codeclimate.com/repos/57d10b3aaee68e0a2d0016b7/badges/aad862afb3ada6425b90/gpa.svg" /></a>
+[![Dependency Status](https://gemnasium.com/badges/github.com/RubyDevInc/aws-iot-device-sdk-ruby.svg)](https://gemnasium.com/github.com/RubyDevInc/aws-iot-device-sdk-ruby)
+[![Gem Version](https://badge.fury.io/rb/aws_iot_device.svg)](https://badge.fury.io/rb/aws_iot_device)
+
+
+# AWS IoT Device SDK for Ruby
 
 
 ## Requirements
@@ -15,7 +20,7 @@ The AWS IoT SDK for Ruby is a gems which enables to manage device registered as 
 - Update: add, change or remove the attribute value of the shadow
 - Delete: clear all the attribute value of the shadow
 
-The client communicates with the AWS IoT platform through the MQTT protocol. An adapter is provided to enable several implementations of the mqtt protocol and thus make the client independent form its back-end library implementation. In the current version, the default settings are using a client based on the ruby-mqtt gems. According to the shadow management, the operations are performed by sending message on the dedicated MQTT topics. The answer could be read on the corresponding MQTT topics, then some treatments could be processed thanks to a system of callback.
+The client communicates with the AWS IoT platform through the MQTT protocol. An adapter is provided to enable several implementations of the MQTT protocol and thus make the client independent form its back-end library implementation. In the current version, the default settings are using a client based on the ruby-mqtt gems. According to the shadow management, the operations are performed by sending message on the dedicated MQTT topics. The answer could be read on the corresponding MQTT topics, then some treatments could be processed thanks to a system of callback.
 
 ## Installation
 The gem is still in a beta version. There is two way to install it, from the `gem` command or directly from sources.
@@ -140,7 +145,7 @@ manager.shadow_topic_unsubscribe(shadow_name, shadow_action)
 ```
 
 ### Shadow Action Manager
-The ShadowActionManager enable to the client to perform the basic action on the shadow, and then execute a default callback with the answer. A callback defined be the user and send as parameter with the action may also been executed. For each operation a task counter is set to hold the number of task which are waiting answer. The ShadowActionManager class could be initialized with two mode, persistent and not-persistent.  In the not-persistent case, the client will automatically unsubscribe to action topic when its corresponding task counter go back to 0. The persistent mode will keep the client subscribed to the topic even if the task counter is 0. In the current version, subscribe to a topic require 2 second to assert the subscription is completed.  The persistent mode enable to run that waiting timer only one for each operation(for the first one).
+The ShadowActionManager enable to the client to perform the basic action on the shadow, and then execute a default callback with the answer. A callback defined be the user and send as parameter with the action may also been executed. For each operation a task counter is set to hold the number of task which are waiting answer. The ShadowActionManager class could be initialized with two mode, persistent and not-persistent.  In the not-persistent case, the client will automatically unsubscribe to action topic when its corresponding task counter go back to 0. The persistent mode will keep the client subscribed to the topic even if the task counter is 0. In the current version, subscribe to a topic require 2 second to assert the subscription is completed. The persistent mode enable to run that waiting timer only one for each operation(for the first one).
 ```ruby
 ### Directly create the ShadowManagerAction
 ### SUBSRIBE_MODE is a boolean, 'true'  for persistent mode and (default)'false'  for not-persistent 
@@ -156,7 +161,7 @@ client.shadow_update("UPDATE_PAYLOAD", "YOUR_CALLBACK_OR_NIL", "TIME_OUT")
 client.shadow_delete("YOUR_CALLBACK_OR_NIL", "TIME_OUT")
 ```
 ## The MQTT Manager
-The MQTTManager class support the operation related with the mqtt protocol, it is a customized MQTT client. According to the MQTT protocol, the MQTTManager may connect, publish, subscribe and disconnect. It holds a callbacks system which  are triggered by mqtt event, for exemple  when a message is received on a subscribed topic. Currently (September 2016), the callback system only support the message(PUBLISH) event, other events (CONNACK, SUBACK, ...) should be supported in the future version.  It is possible to perform the previous AWS Iot operation through the MQTTManager,  by  simply typing the desired topics in the publish request. The following example detailed how to sent a AWS Iot get request at the MQTT level.
+The MqttManager class supports the operations related with the MQTT protocol, it is a customized MQTT client. According to the MQTT protocol, the MqttManager may connect, publish, subscribe and disconnect. It holds a callbacks system which  are triggered by MQTT events, for exemple  when a message is received on a subscribed topic. Currently (September 2016), the callback system only support the message(PUBLISH) event, other events (CONNACK, SUBACK, ...) should be supported in the future version.  It is possible to perform the previous AWS Iot operation through the MqttManager,  by  simply typing the desired topics in the publish request. The following example details how to sent a AWS Iot get request at the MQTT level.
 ```ruby
 ### There two way to initiate the object :
 # 1) Send parameter when creating the object and connect
@@ -176,7 +181,7 @@ client.cert_file = "YOUR_CERT_FILE_PATH"
 client.key_file = "YOUR_KEY_FILE_PATH"
 client.ca_file = "YOUR_ROOT_CA_FILE_PATH"
 
-### Then send a mqtt connect request
+### Then send a MQTT connect request
 client.connect()
 
 client.subscribe("THING_TOPIC_GET_ACCEPTED")
@@ -190,7 +195,7 @@ client.disconnect()
 ``` 
 
 ## MQTT Adapters modules
-The previously detailed MQTTManager class is said to be based on a MQTT client, in this project the MQTT client is implemented as an adapters design pattern named the MQTTAdapter.  The adapter design pattern enables the client implementation to be independent from the back-end MQTT library. Thanks to this design pattern, the MQTTAdapter can work over several implementations of the MQTT protocol. The default implementation used in the project is the [ruby-mqtt](https://github.com/njh/ruby-mqtt) module, where some new features have been added. The adapters defined the method that should be accessible to higher level classes (ex. MQTTManager). 
+The previously detailed MqttManager class is said to be based on a MQTT client, in this project the MQTT client is implemented as an adapters design pattern named the MqttAdapter.  The adapter design pattern enables the client implementation to be independent from the back-end MQTT library. Thanks to this design pattern, the MqttAdapter can work over several implementations of the MQTT protocol. The default implementation used in the project is the [ruby-mqtt](https://github.com/njh/ruby-mqtt) module, where some new features have been added. The adapters defined the method that should be accessible to higher level classes (ex. MqttManager). 
 
 ### Ruby MQTT Adapter
-The [ruby-mqtt](https://github.com/njh/ruby-mqtt) gem provides a client which does the basic MQTT operation(connect, subscribe, publish ....) by reading the packets directly from the sockets.  It adapts the method of the [ruby-mqtt](https://github.com/njh/ruby-mqtt) gem in order to match with the definition in the MQTTAdapter. Inspired by the [Paho](http://www.eclipse.org/paho/) library, a system of (infinite)loop in background is added to this class. This loop system enables a not blocking and  automated message reading.  Also, a callback system is enabled to make some treatment when message are received on a subscribed MQTT topic. If no specific callback is registered for the topic a default callback is executed.
+The [ruby-mqtt](https://github.com/njh/ruby-mqtt) gem provides a client which does the basic MQTT operation(connect, subscribe, publish ....) by reading the packets directly from the sockets.  It adapts the method of the [ruby-mqtt](https://github.com/njh/ruby-mqtt) gem in order to match with the definition in the MqttAdapter. Inspired by the [Paho](http://www.eclipse.org/paho/) library, a system of (infinite)loop in background is added to this class. This loop system enables a not blocking and  automated message reading.  Also, a callback system is enabled to make some treatment when message are received on a subscribed MQTT topic. If no specific callback is registered for the topic a default callback is executed.
