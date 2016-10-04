@@ -33,7 +33,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rspec"
 
   spec.add_runtime_dependency "facets", "~> 3.1.0"
-  spec.add_runtime_dependency "json", "~> 1.8.3"
+  spec.add_runtime_dependency "json", "~> 2.0.2"
   spec.add_runtime_dependency "mqtt", "~> 0.4.0"
   spec.add_runtime_dependency "timers", "~> 4.1.1"
 end

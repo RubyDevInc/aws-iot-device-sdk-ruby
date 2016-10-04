@@ -55,33 +55,17 @@ my_shadow_client = AwsIotDevice::MqttShadowClient::ShadowClient.new
 my_shadow_client.configure_endpoint(host, port)
 my_shadow_client.configure_credentials(root_ca_path, private_key_path, certificate_path)
 
-my_shadow_client.connect do |client|
+my_shadow_client.connect 
+my_shadow_client.create_shadow_handler_with_name(thing, true)
 
-  my_shadow_client.create_shadow_handler_with_name(thing, true)
+puts "##### Starting test_shadow_client_get ######"
+my_shadow_client.get_shadow(filter_callback, 4)
+sleep 5
 
-  puts "##### Starting test_shadow_client_get ######"
-  my_shadow_client.get_shadow(filter_callback, 4)
-  sleep 5
+puts "##### Starting test_shadow_client_get ######"
+my_shadow_client.get_shadow(nil, 4)
+sleep 5
 
-  puts "##### Starting test_shadow_client_get ######"
-  my_shadow_client.get_shadow(nil, 4)
-  sleep 5
-
-  puts "##### Starting test_shadow_client_get ######"
-  my_shadow_client.get_shadow(filter_callback, 4)
-  sleep 5
-end
-
-# my_shadow_client.connect do |client|
-#  client.create_shadow_handler_with_name(thing ,false)
-#     puts "##### Starting test_shadow_client_get ######"
-#     client.get_shadow(filter_callback, 4)
-#     sleep 5
-#     "##### Starting test_shadow_client_get ######"
-#     shadow_client.get_shadow(nil, 4)
-#     sleep 5
-#     "##### Starting test_shadow_client_get ######"
-#     client.get_shadow(filter_callback, 4)
-#     sleep 5
-#     my_shadow_client.disconnect
-# end
+puts "##### Starting test_shadow_client_get ######"
+my_shadow_client.get_shadow(filter_callback, 4)
+sleep 5
