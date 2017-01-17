@@ -68,7 +68,7 @@ module AwsIotDevice
         @ca_file = ca_file
         @key = key
         @cert = cert
-        @client.set_tls_ssl_context(ca_file, cert, key)
+        @client.set_tls_ssl_context(@ca_file, @cert, @key)
       end
 
       def connect(keep_alive_interval=30, &block)
