@@ -7,12 +7,12 @@ module AwsIotDevice
     class ShadowClient
       attr_accessor :action_manager
 
-      def initialize
-        @mqtt_client = MqttManager.new
+      def initialize(*args)
+        @mqtt_client = MqttManager.new(*args)
       end
 
-      def connect
-        @mqtt_client.connect
+      def connect(*args, &block)
+        @mqtt_client.connect(args)
         if block_given?
           begin
             yield(self)
@@ -55,7 +55,7 @@ module AwsIotDevice
         @mqtt_client.disconnect
       end
 
-      def configure_endpoint(host,port)
+      def configure_endpoint(host, port)
         @mqtt_client.config_endpoint(host,port)
       end
 

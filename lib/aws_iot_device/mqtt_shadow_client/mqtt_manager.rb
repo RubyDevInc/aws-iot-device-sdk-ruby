@@ -10,10 +10,6 @@ module AwsIotDevice
 
       attr_accessor :mqtt_operation_timeout_s
 
-      attr_accessor :host
-
-      attr_accessor :port
-
       attr_accessor :ssl
 
       def initialize(*args)
@@ -34,6 +30,22 @@ module AwsIotDevice
           @client.set_tls_ssl_context(@ca_file, @cert, @key)
           @ssl_configured = true
         end
+      end
+
+      def host=(host)
+        @client.host = host
+      end
+
+      def host
+        @client.host
+      end
+
+      def port=(port)
+       @client.port = port
+      end
+
+      def port
+        @client.port
       end
 
       def cert_file=(path)
@@ -60,8 +72,8 @@ module AwsIotDevice
         if host.nil? || port.nil?
           raise "config_endpoint error: either host || port is undefined error"
         end
-        @host = host
-        @port = port
+        @client.host = host
+        @client.port = port
       end
 
       def config_ssl_context(ca_file, key, cert)
@@ -71,15 +83,9 @@ module AwsIotDevice
         @client.set_tls_ssl_context(@ca_file, @cert, @key)
       end
 
-      def connect(keep_alive_interval=30, &block)
-        if keep_alive_interval.nil? && keep_alive_interval.is_a(Integer)
-          raise "connect error: keep_alive_interval cannot be a not nil Interger"
-        end
-
-        @client.host=(@host)
-        @client.port=(@port)
+      def connect(*args, &block)
         ### Execute a mqtt opration loop in background for time period defined by mqtt_connection_timeout
-        @client.connect(block)
+        @client.connect(*args, &block)
       end
 
       def disconnect
@@ -125,8 +131,8 @@ module AwsIotDevice
         @client.unsubscribe(topivd.flatten)
       end
 
-      def add_topic_callback(topic, callback)
-        @client.add_callback_filter_topic(topic, callback)
+      def add_topic_callback(topic, callback, &block)
+        @client.add_callback_filter_topic(topic, callback, &block)
       end
 
       def remove_topic_callback(topic)
