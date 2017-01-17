@@ -13,7 +13,24 @@ module AwsIotDevice
       end
 
       def connect(*args, &block)
-        @client.connect(@client.host, @client.port, @client.keep_alive)
+        if args.last.is_a?(Hash)
+          attr = args.pop
+          args.each_pair do |k, v|
+            if [ "host", "port", "keep_alive", "persistent", "blocking" ].include(k)
+              self.send("#{@client.k}=", v)
+            else
+              raise "Parameter error, invalid paramater \"#{k}\" for connect with paho-mqtt"
+            end
+          end
+        end
+        @client.connect
+        if block_given?
+          begin
+            yield(self)
+          ensure
+            @mqtt_client.disconnect
+          end
+        end
       end
 
       def publish(topic, payload="", retain=false, qos=0)
