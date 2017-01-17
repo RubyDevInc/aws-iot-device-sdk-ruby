@@ -17,19 +17,6 @@ module AwsIotDevice
         @mutex_publish = Mutex.new()
         @mutex_subscribe = Mutex.new()
         @mutex_unsubscribe = Mutex.new()
-        @ssl_configured = false
-
-        if args.last.is_a?(Hash)
-          attr = args.pop
-          attr.each_pair do |k, v|
-            self.send("#{k}=", v)
-          end
-        end
-
-        if need_ssl_configure?
-          @client.set_tls_ssl_context(@ca_file, @cert, @key)
-          @ssl_configured = true
-        end
       end
 
       def host=(host)
@@ -47,7 +34,7 @@ module AwsIotDevice
       def port
         @client.port
       end
-
+      
       def cert_file=(path)
         @cert = path
       end
@@ -137,10 +124,6 @@ module AwsIotDevice
 
       def remove_topic_callback(topic)
         @client.remove_callback_filter_topic(topic)
-      end
-      
-      def need_ssl_configure?
-        !( @ca_file.nil? || @cert.nil? || @key.nil? ) && @ssl
       end
     end
   end
