@@ -9,7 +9,7 @@ module AwsIotDevice
     def adapter
       return @adapter if @adapter
       ### Calling the setter method with the default symbol 'RubyMqttAdapter' and return it.
-      self.adapter = :paho_mqtt_ruby_adapter
+      self.adapter = :paho_mqtt_adapter
       @adapter
     end
 

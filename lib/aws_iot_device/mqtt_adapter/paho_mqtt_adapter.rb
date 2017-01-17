@@ -1,11 +1,11 @@
-require 'PahoMqttRuby'
+require 'paho-mqtt'
 
 module AwsIotDevice
   module MqttAdapter
-    class PahoMqttRubyAdapter
+    class PahoMqttAdapter
 
       def initialize(*args)
-        @client = PahoMqttRuby::Client.new(args[0])
+        @client = PahoMqtt::Client.new(args[0])
       end
 
       def client_id

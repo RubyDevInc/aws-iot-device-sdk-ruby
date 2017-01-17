@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.summary       = %q{A gem use to communicates with the Aws Iot platform through the MQTT protocol}
   spec.description   = %q{A gem use to communicates with the Aws Iot platform through the MQTT protocol}
   spec.homepage      = "https://github.com/RubyDevInc/aws-iot-device-sdk-ruby"
-  spec.license       = "Apache 2.0"
+  spec.license       = "Apache-2.0"
 
   # Prevent pushing this gem to RubyGems.org by setting 'allowed_push_host', or
   # delete this section to allow pushing this gem to any host.
@@ -27,13 +27,13 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_development_dependency "bundler", "~> 1.10"
-  spec.add_development_dependency "pry"
-  spec.add_development_dependency "rake", "~> 10.0"
-  spec.add_development_dependency "rspec"
+  spec.add_development_dependency "bundler", "~> 1.10", ">= 1.10"
+  spec.add_development_dependency "pry", "~> 0.10.4", ">= 0.10.4"
+  spec.add_development_dependency "rake", "~> 10.0", ">= 1.10" 
+  spec.add_development_dependency "rspec", "~> 3.5.0", ">= 3.5.0"
 
-  spec.add_runtime_dependency "facets", "~> 3.1.0"
-  spec.add_runtime_dependency "json", "~> 2.0.2"
-  spec.add_runtime_dependency "mqtt", "~> 0.4.0"
-  spec.add_runtime_dependency "timers", "~> 4.1.1"
+  spec.add_runtime_dependency "facets", "~> 3.1.0", ">= 3.1.0"
+  spec.add_runtime_dependency "json", "~> 2.0.2", ">= 2.0.2"
+  spec.add_runtime_dependency "mqtt", "~> 0.4.0", ">= 0.4.0"
+  spec.add_runtime_dependency "timers", "~> 4.1.1", ">= 4.1.1"
 end
