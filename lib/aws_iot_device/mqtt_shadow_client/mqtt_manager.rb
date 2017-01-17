@@ -34,11 +34,6 @@ module AwsIotDevice
           @client.set_tls_ssl_context(@ca_file, @cert, @key)
           @ssl_configured = true
         end
-
-        ### Set the on_message's callback
-        @client.on_message = Proc.new do |message|
-          on_message_callback(message)
-        end
       end
 
       def cert_file=(path)
@@ -59,12 +54,6 @@ module AwsIotDevice
 
       def create_mqtt_adapter(*args)
         @client = MqttAdapter::Client.new(*args)
-      end
-
-      def on_message_callback(message)
-        puts "Received (with no custom callback registred) : "
-        puts "------------------- Topic: #{message.topic}"
-        puts "------------------- Payload: #{message.payload}"
       end
 
       def config_endpoint(host, port)
@@ -106,26 +95,44 @@ module AwsIotDevice
         }
       end
 
-      def subscribe(topic, _qos=0, callback=nil)
+      def subscribe(topic, qos=0, callback=nil)
         if topic.nil?
           raise "subscribe error: topic cannot be nil"
         end
         @mutex_subscribe.synchronize {
           @client.add_callback_filter_topic(topic, callback)
-          @client.subscribe(topic)
+          @client.subscribe(topic, qos)
         }
       end
 
-      def unsubscribe(topic)
-        if topic.nil?
+      def subscribe_bunch(*topics)
+        @client.subscribe_bunch(topics.flatten)
+      end
+      
+      def unsubscribe(topics)
+        if topics.nil?
           raise "unsubscribe error: topic cannot be nil"
         end
         @mutex_unsubscribe.synchronize{
-          @client.remove_callback_filter_topic(topic)
-          @client.unsubscribe(topic)
+          topics.each do |topic|
+            @client.remove_callback_filter_topic(topic)
+          end
+          @client.unsubscribe(topics)
         }
       end
 
+      def unsubscribe_bunch(*topics)
+        @client.unsubscribe(topivd.flatten)
+      end
+
+      def add_topic_callback(topic, callback)
+        @client.add_callback_filter_topic(topic, callback)
+      end
+
+      def remove_topic_callback(topic)
+        @client.remove_callback_filter_topic(topic)
+      end
+      
       def need_ssl_configure?
         !( @ca_file.nil? || @cert.nil? || @key.nil? ) && @ssl
       end

@@ -48,9 +48,9 @@ module AwsIotDevice
       end
 
       def mqtt_loop
-        @adapter.loop
+        @adapter.mqtt_loop
       end
-
+      
       def loop_read
         @adapter.loop_read
       end
@@ -83,30 +83,98 @@ module AwsIotDevice
         @adapter.connected?
       end
 
-      def subscribe(topic)
-        @adapter.subscribe(topic)
+      def subscribe(topic, qos)
+        @adapter.subscribe(topic, qos)
       end
 
+      def subscribe_bunch(*topics)
+        @adapter.subscribe_bunch(topics)
+      end
+      
       def unsubscribe(topic)
         @adapter.unsubscribe(topic)
+      end
+
+      def unsubscribe_bunch(*topics)
       end
 
       def set_tls_ssl_context(ca_cert, cert=nil, key=nil)
         @adapter.set_tls_ssl_context(ca_cert, cert, key)
       end
 
-      def add_callback_filter_topic(topic, callback)
-        @adapter.add_callback_filter_topic(topic, callback)
+      def add_callback_filter_topic(topic, callback=nil, &block)
+        @adapter.add_callback_filter_topic(topic, callback, &block)
       end
 
       def remove_callback_filter_topic(topic)
         @adapter.remove_callback_filter_topic(topic)
       end
 
-      def on_message=(callback)
-        @adapter.on_message = callback
+      def on_connack=(callback)
+        @adapter.on_connack=(callback)
+      end
+      
+      def on_suback=(callback)
+        @adapter.on_suback=(callback)
       end
 
+      def on_unsuback=(callback)
+        @adapter.on_unsuback=(callback)
+      end
+
+      def on_puback=(callback)
+        @adapter.on_puback=(callback)
+      end
+
+      def on_pubrec=(callback)
+        @adapter.on_pubrec=(callback)
+      end
+
+      def on_pubrel=(callback)
+        @adapter.on_pubrel=(callback)
+      end
+
+      def on_pubcomp=(callback)
+        @adapter.on_pubcomp=(callback)
+      end
+      
+      def on_message=(callback)
+        @adapter.on_message=(callback)
+      end
+      
+      def on_connack(&block)
+        @adapter.on_connack(&block)
+      end
+      
+      def on_suback(&block)
+        @adapter.on_suback(&block)
+      end
+
+      def on_unsuback(&block)
+        @adapter.on_unsuback(&block)
+      end
+
+      def on_puback(&block)
+        @adapter.on_puback(&block)
+      end
+
+      def on_pubrec(&block)
+        @adapter.on_pubrec(&block)
+      end
+
+      def on_pubrel(&block)
+        @adapter.on_pubrel(&block)
+      end
+
+      def on_pubcomp(&block)
+        @adapter.on_pubcomp(&block)
+      end
+      
+      def on_message(&block)
+        @adapter.on_message(&block)
+      end
+
+      
       ### The following attributes should exists in every MQTT third party librairy.
       ### They are necessary (or really usefull and common) for the establishement of the connection and/or the basic Mqtt actions.
       ### The setter directely change the third party client value when the getter remote the actual SharedClient instance's attribute value
