@@ -95,6 +95,7 @@ module AwsIotDevice
           raise "unsubscribe error: topic cannot be nil"
         end
         @mutex_unsubscribe.synchronize{
+          topics = [topics] unless topics.is_a?(Enumerator)
           topics.each do |topic|
             @client.remove_callback_filter_topic(topic)
           end
