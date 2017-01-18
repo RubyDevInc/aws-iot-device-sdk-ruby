@@ -51,7 +51,7 @@ my_shadow_client = AwsIotDevice::MqttShadowClient::ShadowClient.new
 my_shadow_client.configure_endpoint(host, port)
 my_shadow_client.configure_credentials(root_ca_path, private_key_path, certificate_path)
 
-my_shadow_client.connect
+my_shadow_client.connect({:persistent => true})
 
 my_shadow_client.create_shadow_handler_with_name(thing, true)
 
