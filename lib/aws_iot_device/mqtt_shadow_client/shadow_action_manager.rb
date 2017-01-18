@@ -58,6 +58,10 @@ module AwsIotDevice
           elsif %w(delta).include?(action)
             do_delta(message)
           end
+          if @is_subscribed[action.to_sym]
+            @topic_manager.shadow_topic_unsubscribe(@shadow_name, action)
+            @is_subscribed[action.to_sym] = false
+          end
         }
       end
 
@@ -113,8 +117,7 @@ module AwsIotDevice
           @payload_parser.set_attribute_value("clientToken", current_token)
           json_payload = @payload_parser.get_json
           unless @is_subscribed[:get]
-            @topic_manager.shadow_topic_subscribe(@shadow_name, "get", @default_callback)
-            @is_subscribed[:get] = true
+            @is_subscribed[:get] = @topic_manager.shadow_topic_subscribe(@shadow_name, "get", @default_callback)
           end
           @topic_manager.shadow_topic_publish(@shadow_name, "get", json_payload)
           @token_pool[current_token] = timer
@@ -138,8 +141,7 @@ module AwsIotDevice
           @payload_parser.set_attribute_value("clientToken", current_token)
           json_payload = @payload_parser.get_json
           unless @is_subscribed[:update]
-            @topic_manager.shadow_topic_subscribe(@shadow_name, "update", @default_callback)
-            @is_subscribed[:update] = true
+            @is_subscribed[:update] = @topic_manager.shadow_topic_subscribe(@shadow_name, "update", @default_callback)
           end
           @topic_manager.shadow_topic_publish(@shadow_name, "update", json_payload)
           @token_pool[current_token] = timer
@@ -162,8 +164,7 @@ module AwsIotDevice
           @payload_parser.set_attribute_value("clientToken",current_token)
           json_payload = @payload_parser.get_json
           unless @is_subscribed[:delete]
-            @topic_manager.shadow_topic_subscribe(@shadow_name, "delete", @default_callback)
-            @is_subscribed[:delete] = true
+            @is_subscribed[:delete] = @topic_manager.shadow_topic_subscribe(@shadow_name, "delete", @default_callback)
           end
           @topic_manager.shadow_topic_publish(@shadow_name, "delete", json_payload)
           @token_pool[current_token] = timer

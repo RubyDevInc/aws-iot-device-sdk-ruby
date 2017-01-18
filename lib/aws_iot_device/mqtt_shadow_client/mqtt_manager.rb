@@ -14,6 +14,7 @@ module AwsIotDevice
 
       def initialize(*args)
         @client = create_mqtt_adapter(*args)
+        @mqtt_operation_timeout_s = 2
         @mutex_publish = Mutex.new()
         @mutex_subscribe = Mutex.new()
         @mutex_unsubscribe = Mutex.new()
@@ -87,24 +88,95 @@ module AwsIotDevice
       end
 
       def subscribe_bunch(*topics)
-        @client.subscribe_bunch(topics.flatten)
+        @mutex_subscribe.synchronize {
+          topics.each do |topic|
+            @client.add_callback_filter_topic(topic.first, topic.pop) if !topic[2].nil? && topic[2].is_a?(Proc)
+          end
+          @client.subscribe_bunch(topics)
+        }
       end
       
-      def unsubscribe(topics)
-        if topics.nil?
+      def unsubscribe(topic)
+        if topic.nil?
           raise "unsubscribe error: topic cannot be nil"
         end
         @mutex_unsubscribe.synchronize{
-          topics = [topics] unless topics.is_a?(Enumerator)
-          topics.each do |topic|
-            @client.remove_callback_filter_topic(topic)
-          end
-          @client.unsubscribe(topics)
+          @client.remove_callback_filter_topic(topic)
+          @client.unsubscribe(topic)
         }
       end
 
       def unsubscribe_bunch(*topics)
-        @client.unsubscribe(topivd.flatten)
+        @mutex_unsubscribe.synchronize {
+          topics.each do |topic|
+            @client.remove_callback_filter_topic(topic)
+          end
+          @client.unsubscribe_bunch(topics)
+        }
+      end
+
+      def on_connack=(callback)
+        @client.on_connack = callback
+      end
+
+      def on_suback=(callback)
+        @client.on_suback = callback
+      end
+
+      def on_unsuback=(callback)
+        @client.on_unsuback = callback
+      end
+
+      def on_puback=(callback)
+        @client.on_puback = callback
+      end
+
+      def on_pubrec=(callback)
+        @client.on_pubrec = callback
+      end
+
+      def on_pubrel=(callback)
+        @client.on_pubrel = callback
+      end
+
+      def on_pubcomp=(callback)
+        @client.on_pubcomp = callback
+      end
+
+      def on_message=(callback)
+        @client.on_message = callback
+      end
+
+      def on_connack(&block)
+        @client.on_connack(&block)
+      end
+
+      def on_suback(&block)
+        @client.on_suback(&block)
+      end
+
+      def on_unsuback(&block)
+        @client.on_unsuback(&block)
+      end
+
+      def on_puback(&block)
+        @client.on_puback(&block)
+      end
+
+      def on_pubrec(&block)
+        @client.on_pubrec(&block)
+      end
+
+      def on_pubrel(&block)
+        @client.on_pubrel(&block)
+      end
+
+      def on_pubcomp(&block)
+        @client.on_pubcomp(&block)
+      end
+
+      def on_message(&block)
+        @client.on_message(&block)
       end
 
       def add_topic_callback(topic, callback, &block)
@@ -114,7 +186,6 @@ module AwsIotDevice
       def remove_topic_callback(topic)
         @client.remove_callback_filter_topic(topic)
       end
-
 
       private
 
