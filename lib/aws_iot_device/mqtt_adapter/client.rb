@@ -96,6 +96,7 @@ module AwsIotDevice
       end
 
       def unsubscribe_bunch(*topics)
+        @adapter.unsubscribe_bunch(topics)
       end
 
       def set_tls_ssl_context(ca_cert, cert=nil, key=nil)
@@ -111,35 +112,35 @@ module AwsIotDevice
       end
 
       def on_connack=(callback)
-        @adapter.on_connack=(callback)
+        @adapter.on_connack = callback
       end
       
       def on_suback=(callback)
-        @adapter.on_suback=(callback)
+        @adapter.on_suback = callback
       end
 
       def on_unsuback=(callback)
-        @adapter.on_unsuback=(callback)
+        @adapter.on_unsuback = callback
       end
 
       def on_puback=(callback)
-        @adapter.on_puback=(callback)
+        @adapter.on_puback = callback
       end
 
       def on_pubrec=(callback)
-        @adapter.on_pubrec=(callback)
+        @adapter.on_pubrec = callback
       end
 
       def on_pubrel=(callback)
-        @adapter.on_pubrel=(callback)
+        @adapter.on_pubrel = callback
       end
 
       def on_pubcomp=(callback)
-        @adapter.on_pubcomp=(callback)
+        @adapter.on_pubcomp = callback
       end
       
       def on_message=(callback)
-        @adapter.on_message=(callback)
+        @adapter.on_message = callback
       end
       
       def on_connack(&block)
@@ -173,7 +174,6 @@ module AwsIotDevice
       def on_message(&block)
         @adapter.on_message(&block)
       end
-
       
       ### The following attributes should exists in every MQTT third party librairy.
       ### They are necessary (or really usefull and common) for the establishement of the connection and/or the basic Mqtt actions.

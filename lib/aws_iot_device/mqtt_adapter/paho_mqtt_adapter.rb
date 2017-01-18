@@ -80,7 +80,7 @@ module AwsIotDevice
       end
 
       def disconnect(send_msg)
-        @client.disconnect
+        @client.disconnect(send_msg)
       end
 
       def connected?
