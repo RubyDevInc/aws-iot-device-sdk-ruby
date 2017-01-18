@@ -118,7 +118,7 @@ module AwsIotDevice
           end
           @topic_manager.shadow_topic_publish(@shadow_name, "get", json_payload)
           @token_pool[current_token] = timer
-          Thread.new{ timer.wait }.join
+          Thread.new{ timer.wait }
           current_token
         }
       end
@@ -143,7 +143,7 @@ module AwsIotDevice
           end
           @topic_manager.shadow_topic_publish(@shadow_name, "update", json_payload)
           @token_pool[current_token] = timer
-          Thread.new{ timer.wait }.join
+          Thread.new{ timer.wait }
           current_token
         }
       end
@@ -167,7 +167,7 @@ module AwsIotDevice
           end
           @topic_manager.shadow_topic_publish(@shadow_name, "delete", json_payload)
           @token_pool[current_token] = timer
-          Thread.new{ timer.wait }.join
+          Thread.new{ timer.wait }
           current_token
         }
       end
@@ -204,7 +204,7 @@ module AwsIotDevice
         new_version = @payload_parser.get_attribute_value("version")
         if new_version && new_version >= @last_stable_version
           type.eql?("delete") ? @last_stable_version = -1 : @last_stable_version = new_version
-          Thread.new { @topic_subscribed_callback[action].call(message) }.join unless @topic_subscribed_callback[action].nil?
+          Thread.new { @topic_subscribed_callback[action].call(message) } unless @topic_subscribed_callback[action].nil?
         else
           puts "CATCH AN UPDATE BUT OUTDATED/INVALID VERSION (= #{new_version}) FOR TOKEN #{token}\n"
         end
@@ -214,7 +214,7 @@ module AwsIotDevice
         new_version = @payload_parser.get_attribute_value("version")
         if new_version && new_version >= @last_stable_version
           @last_stable_version = new_version
-          Thread.new { @topic_subscribed_callback[:delta].call(message) }.join unless @topic_subscribed_callback[:delta].nil?
+          Thread.new { @topic_subscribed_callback[:delta].call(message) } unless @topic_subscribed_callback[:delta].nil?
         else
           puts "CATCH A DELTA BUT OUTDATED/INVALID VERSION (= #{new_version})\n"
         end
