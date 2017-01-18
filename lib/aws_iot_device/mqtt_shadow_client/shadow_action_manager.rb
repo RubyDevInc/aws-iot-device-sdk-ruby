@@ -76,9 +76,6 @@ module AwsIotDevice
                 @is_subscribed[action.to_sym] = false
               end
             end
-            unless @topic_subscribed_callback[action].nil?
-              @topic_subscribed_callback[action].call("REQUEST TIME OUT", "timeout", token)
-            end
           end
         }
       end
