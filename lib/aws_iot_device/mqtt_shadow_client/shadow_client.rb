@@ -12,7 +12,7 @@ module AwsIotDevice
       end
 
       def connect(*args, &block)
-        @mqtt_client.connect(args)
+        @mqtt_client.connect(*args)
         if block_given?
           begin
             yield(self)

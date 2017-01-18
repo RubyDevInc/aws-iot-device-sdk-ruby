@@ -116,6 +116,7 @@ module AwsIotDevice
 
 
       private
+
       def cert=(path)
         @cert = path
       end
