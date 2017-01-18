@@ -61,13 +61,10 @@ my_shadow_client.connect do |client|
 
   puts "##### Starting test_shadow_client_get ######"
   client.get_shadow(filter_callback, 4)
-  sleep 5
 
   puts "##### Starting test_shadow_client_get ######"
   client.get_shadow(nil, 4) { puts "CALLED FROM BLOCK" }
-  sleep 5
 
   puts "##### Starting test_shadow_client_get ######"
   client.get_shadow(filter_callback, 4)
-  sleep 5
 end
