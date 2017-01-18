@@ -35,18 +35,6 @@ module AwsIotDevice
         @client.port
       end
       
-      def cert_file=(path)
-        @cert = path
-      end
-
-      def key_file=(path)
-        @key = path
-      end
-
-      def ca_file=(path)
-        @ca_file = path
-      end
-
       def client_id
         @client.client_id
       end
@@ -57,16 +45,16 @@ module AwsIotDevice
 
       def config_endpoint(host, port)
         if host.nil? || port.nil?
-          raise "config_endpoint error: either host || port is undefined error"
+          raise "config_endpoint error: either host || port is undefined"
         end
         @client.host = host
         @client.port = port
       end
 
       def config_ssl_context(ca_file, key, cert)
-        @ca_file = ca_file
-        @key = key
-        @cert = cert
+        self.ca_file = ca_file
+        self.key = key
+        self.cert = cert
         @client.set_tls_ssl_context(@ca_file, @cert, @key)
       end
 
@@ -84,7 +72,7 @@ module AwsIotDevice
           raise "publish error: topic cannot be nil"
         end
         @mutex_publish.synchronize{
-          @client.publish(topic,payload,qos,retain)
+          @client.publish(topic,payload, qos, retain)
         }
       end
 
@@ -124,6 +112,21 @@ module AwsIotDevice
 
       def remove_topic_callback(topic)
         @client.remove_callback_filter_topic(topic)
+      end
+
+
+      private
+      
+      def cert_file=(path)
+        @cert = path
+      end
+
+      def key_file=(path)
+        @key = path
+      end
+
+      def ca_file=(path)
+        @ca_file = path
       end
     end
   end
