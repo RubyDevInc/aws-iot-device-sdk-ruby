@@ -116,12 +116,11 @@ module AwsIotDevice
 
 
       private
-      
-      def cert_file=(path)
+      def cert=(path)
         @cert = path
       end
 
-      def key_file=(path)
+      def key=(path)
         @key = path
       end
 
