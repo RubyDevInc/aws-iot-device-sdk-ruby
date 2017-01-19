@@ -33,6 +33,7 @@ module AwsIotDevice
         @topic_subscribed_task_count[:update] = 0
         @topic_subscribed_task_count[:delete] = 0
         @token_pool = {}
+        @token_callback = {}
         @general_action_mutex = Mutex.new
         @default_callback = proc { |message| do_default_callback(message) }
       end
@@ -50,17 +51,17 @@ module AwsIotDevice
           if %w(get update delete).include?(action)
             token = @payload_parser.get_attribute_value("clientToken")
             if @token_pool.has_key?(token)
-              do_accepted(message, action.to_sym, type) if type.eql?("accepted")
               @token_pool[token].cancel
               @token_pool.delete(token)
+              if type.eql?("accepted")
+                do_accepted(message, action.to_sym, type, token)
+              else
+                @token_callback.delete(token)
+              end
               decresase_task_count(action.to_sym)
             end
           elsif %w(delta).include?(action)
             do_delta(message)
-          end
-          if @is_subscribed[action.to_sym]
-            @topic_manager.shadow_topic_unsubscribe(@shadow_name, action)
-            @is_subscribed[action.to_sym] = false
           end
         }
       end
@@ -71,12 +72,13 @@ module AwsIotDevice
           if @token_pool.has_key?(token)
             action = action_name.to_sym
             @token_pool.delete(token)
+            @token_callback.delete(token)
             puts "The #{action_name} request with the token #{token} has timed out!\n"
             @topic_subscribed_task_count[action] -= 1
             unless @topic_subscribed_task_count[action] <= 0
               @topic_subscribed_task_count[action] = 0
               unless @persistent_subscribe
-                @topic_manager.shadow_topic_unsubscribe(@shadow_name, action)
+                @topic_manager.shadow_topic_unsubscribe(action)
                 @is_subscribed[action.to_sym] = false
               end
             end
@@ -110,21 +112,17 @@ module AwsIotDevice
         timer = Timers::Group.new
         json_payload = ""
         @general_action_mutex.synchronize(){
-          if callback.is_a?(Proc)
-            @topic_subscribed_callback[:get] = callback
-          elsif block_given?
-            @topic_subscribed_callback[:get] = block
-          end
-          @topic_subscribed_task_count[:get] += 1
           current_token = @token_handler.create_next_token
           timer.after(timeout){ timeout_manager(:get, current_token) }
           @payload_parser.set_attribute_value("clientToken", current_token)
           json_payload = @payload_parser.get_json
           unless @is_subscribed[:get]
-            @is_subscribed[:get] = @topic_manager.shadow_topic_subscribe(@shadow_name, "get", @default_callback)
+            @is_subscribed[:get] = @topic_manager.shadow_topic_subscribe("get", @default_callback)
           end
-          @topic_manager.shadow_topic_publish(@shadow_name, "get", json_payload)
+          @topic_manager.shadow_topic_publish("get", json_payload)
+          @topic_subscribed_task_count[:get] += 1
           @token_pool[current_token] = timer
+          register_token_callback(current_token, callback, &block)
           Thread.new{ timer.wait }
           current_token
         }
@@ -135,22 +133,18 @@ module AwsIotDevice
         timer = Timers::Group.new
         json_payload = ""
         @general_action_mutex.synchronize(){
-          if callback.is_a?(Proc)
-            @topic_subscribed_callback[:update] = callback
-          elsif block_given?
-            @topic_subscribed_callback[:update] = block
-          end
-          @topic_subscribed_task_count[:update] += 1
           current_token = @token_handler.create_next_token
           timer.after(timeout){ timeout_manager(:update, current_token) }
           @payload_parser.set_message(payload)
           @payload_parser.set_attribute_value("clientToken", current_token)
           json_payload = @payload_parser.get_json
           unless @is_subscribed[:update]
-            @is_subscribed[:update] = @topic_manager.shadow_topic_subscribe(@shadow_name, "update", @default_callback)
+            @is_subscribed[:update] = @topic_manager.shadow_topic_subscribe("update", @default_callback)
           end
-          @topic_manager.shadow_topic_publish(@shadow_name, "update", json_payload)
+          @topic_manager.shadow_topic_publish("update", json_payload)
+          @topic_subscribed_task_count[:update] += 1
           @token_pool[current_token] = timer
+          register_token_callback(current_token, callback, &block)
           Thread.new{ timer.wait }
           current_token
         }
@@ -161,59 +155,107 @@ module AwsIotDevice
         timer = Timers::Group.new
         json_payload = ""
         @general_action_mutex.synchronize(){
-          if callback.is_a?(Proc)
-            @topic_subscribed_callback[:delete] = callback
-          elsif block_given?
-            @topic_subscribed_callback[:delete] = block
-          end
-          @topic_subscribed_task_count[:delete] += 1
           current_token = @token_handler.create_next_token
           timer.after(timeout){ timeout_manager(:delete, current_token) }
           @payload_parser.set_attribute_value("clientToken",current_token)
           json_payload = @payload_parser.get_json
           unless @is_subscribed[:delete]
-            @is_subscribed[:delete] = @topic_manager.shadow_topic_subscribe(@shadow_name, "delete", @default_callback)
+            @is_subscribed[:delete] = @topic_manager.shadow_topic_subscribe("delete", @default_callback)
           end
-          @topic_manager.shadow_topic_publish(@shadow_name, "delete", json_payload)
+          @topic_manager.shadow_topic_publish("delete", json_payload)
+          @topic_subscribed_task_count[:delete] += 1
           @token_pool[current_token] = timer
+          register_token_callback(current_token, callback, &block)
           Thread.new{ timer.wait }
           current_token
         }
       end
 
+      def register_get_callback(callback, &block)
+        register_action_callback(:get, callback, &block)
+      end
+
+      def register_update_callback(callback, &block)
+        register_action_callback(:update, callback, &block)
+      end
+
+      def register_delete_callback(callback, &block)
+        register_action_callback(:delete, callback, &block)
+      end
+
       def register_shadow_delta_callback(callback)
         @general_action_mutex.synchronize() {
           @topic_subscribed_callback[:delta] = callback
-          @topic_manager.shadow_topic_subscribe(@shadow_name, "delta", @default_callback)
+          @topic_manager.shadow_topic_subscribe("delta", @default_callback)
         }
+      end
+
+      def remove_get_callback
+        remove_action_callback(:get)
+      end
+
+      def remove_update_callback
+        remove_action_callback(:update)
+      end
+
+      def remove_delete_callback
+        remove_action_callback(:delete)
       end
 
       def remove_shadow_delta_callback
         @general_action_mutex.synchronize() {
           @topic_subscribe_callback.delete[:delta]
-          @topic_manager.shadow_topic_unsubscribe(@shadow_name, "delta")
+          @topic_manager.shadow_topic_unsubscribe("delta")
         }
       end
 
 
       private
 
+      def register_token_callback(token, callback, &block)
+        if callback.is_a?(Proc)
+          @token_callback[token] = callback
+        elsif block_given?
+          @token_callback[token] = block
+        end
+      end
+
+      def remove_token_callback(token)
+        @token_callback.delete(token)
+      end
+
+      def register_action_callback(action, callback, &block)
+        if callback.is_a?(Proc)
+          @topic_subscribed_callback[action] = callback
+        elsif block_given?
+          @topic_subscribed_callback[action] = block
+        end
+      end
+
+      def remove_action_callback(action)
+        @topic_subscribed_callback[action] = nil
+      end
+
       def decresase_task_count(action)
         @topic_subscribed_task_count[action] -= 1
         if @topic_subscribed_task_count[action] <= 0
           @topic_subscribed_task_count[action] = 0
           unless @persistent_subscribe
-            @topic_manager.shadow_topic_unsubscribe(@shadow_name, action.to_s)
+            @topic_manager.shadow_topic_unsubscribe(action.to_s)
             @is_subscribed[action] = false
           end
         end
       end
 
-      def do_accepted(message, action, type)
+      def do_accepted(message, action, type, token)
         new_version = @payload_parser.get_attribute_value("version")
         if new_version && new_version >= @last_stable_version
           type.eql?("delete") ? @last_stable_version = -1 : @last_stable_version = new_version
-          Thread.new { @topic_subscribed_callback[action].call(message) } unless @topic_subscribed_callback[action].nil?
+          Thread.new do
+            @topic_subscribed_callback[action].call(message)  unless @topic_subscribed_callback[action].nil?
+            @token_callback[token].call(message) if @token_callback.has_key?(token)
+            @token_callback.delete(token)
+          end
         else
           puts "CATCH AN UPDATE BUT OUTDATED/INVALID VERSION (= #{new_version})\n"
         end
