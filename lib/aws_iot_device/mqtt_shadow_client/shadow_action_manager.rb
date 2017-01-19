@@ -108,67 +108,15 @@ module AwsIotDevice
       ###   > the token associate to the current action (which also store in @token_pool)
 
       def shadow_get(timeout=5, callback=nil, &block)
-        current_token = Symbol
-        timer = Timers::Group.new
-        json_payload = ""
-        @general_action_mutex.synchronize(){
-          current_token = @token_handler.create_next_token
-          timer.after(timeout){ timeout_manager(:get, current_token) }
-          @payload_parser.set_attribute_value("clientToken", current_token)
-          json_payload = @payload_parser.get_json
-          unless @is_subscribed[:get]
-            @is_subscribed[:get] = @topic_manager.shadow_topic_subscribe("get", @default_callback)
-          end
-          @topic_manager.shadow_topic_publish("get", json_payload)
-          @topic_subscribed_task_count[:get] += 1
-          @token_pool[current_token] = timer
-          register_token_callback(current_token, callback, &block)
-          Thread.new{ timer.wait }
-          current_token
-        }
+        shadow_action(:get, "", timeout, callback, &block)
       end
 
       def shadow_update(payload, timeout=5, callback=nil, &block)
-        current_token = Symbol
-        timer = Timers::Group.new
-        json_payload = ""
-        @general_action_mutex.synchronize(){
-          current_token = @token_handler.create_next_token
-          timer.after(timeout){ timeout_manager(:update, current_token) }
-          @payload_parser.set_message(payload)
-          @payload_parser.set_attribute_value("clientToken", current_token)
-          json_payload = @payload_parser.get_json
-          unless @is_subscribed[:update]
-            @is_subscribed[:update] = @topic_manager.shadow_topic_subscribe("update", @default_callback)
-          end
-          @topic_manager.shadow_topic_publish("update", json_payload)
-          @topic_subscribed_task_count[:update] += 1
-          @token_pool[current_token] = timer
-          register_token_callback(current_token, callback, &block)
-          Thread.new{ timer.wait }
-          current_token
-        }
+        shadow_action(:update, payload, timeout, callback, &block)
       end
 
       def shadow_delete(timeout=5, callback=nil, &block)
-        current_token = Symbol
-        timer = Timers::Group.new
-        json_payload = ""
-        @general_action_mutex.synchronize(){
-          current_token = @token_handler.create_next_token
-          timer.after(timeout){ timeout_manager(:delete, current_token) }
-          @payload_parser.set_attribute_value("clientToken",current_token)
-          json_payload = @payload_parser.get_json
-          unless @is_subscribed[:delete]
-            @is_subscribed[:delete] = @topic_manager.shadow_topic_subscribe("delete", @default_callback)
-          end
-          @topic_manager.shadow_topic_publish("delete", json_payload)
-          @topic_subscribed_task_count[:delete] += 1
-          @token_pool[current_token] = timer
-          register_token_callback(current_token, callback, &block)
-          Thread.new{ timer.wait }
-          current_token
-        }
+        shadow_action(:delete, "", timeout, callback, &block)
       end
 
       def register_get_callback(callback, &block)
@@ -211,6 +159,29 @@ module AwsIotDevice
 
 
       private
+
+
+      def shadow_action(action, payload="", timeout=5, callback=nil, &block)
+        current_token = Symbol
+        timer = Timers::Group.new
+        json_payload = ""
+        @general_action_mutex.synchronize(){
+          current_token = @token_handler.create_next_token
+          timer.after(timeout){ timeout_manager(action, current_token) }
+          @payload_parser.set_message(payload) unless payload == ""
+          @payload_parser.set_attribute_value("clientToken", current_token)
+          json_payload = @payload_parser.get_json
+          unless @is_subscribed[action]
+            @is_subscribed[action] = @topic_manager.shadow_topic_subscribe(action.to_s, @default_callback)
+          end
+          @topic_manager.shadow_topic_publish(action.to_s, json_payload)
+          @topic_subscribed_task_count[action] += 1
+          @token_pool[current_token] = timer
+          register_token_callback(current_token, callback, &block)
+          Thread.new{ timer.wait }
+          current_token
+        }
+      end
 
       def register_token_callback(token, callback, &block)
         if callback.is_a?(Proc)
