@@ -70,7 +70,7 @@ n = 1
 
 5.times do
   json_payload = "{\"state\":{\"desired\":{\"property\":\"RubySDK\",\"count\":#{n}}}}"
-  client.shadow_update(json_payload, filter_callback, timeout)
+  client.shadow_update(json_payload, timout, filter_callback)
   n += 1
 end
 

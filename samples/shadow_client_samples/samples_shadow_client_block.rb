@@ -60,11 +60,18 @@ my_shadow_client.connect do |client|
   client.create_shadow_handler_with_name(thing, true)
 
   puts "##### Starting test_shadow_client_get ######"
-  client.get_shadow(filter_callback, 4)
+  client.get_shadow(4, filter_callback)
 
+  sleep 1 # let time to execute callback
+  
   puts "##### Starting test_shadow_client_get ######"
-  client.get_shadow(nil, 4) { puts "CALLED FROM BLOCK" }
+  client.get_shadow(4) do
+    puts "CALLED FROM BLOCK"
+  end
 
+  sleep 1 # let time to execute callback
+  
   puts "##### Starting test_shadow_client_get ######"
-  client.get_shadow(filter_callback, 4)
+  client.get_shadow(4, filter_callback)
+  sleep 1
 end

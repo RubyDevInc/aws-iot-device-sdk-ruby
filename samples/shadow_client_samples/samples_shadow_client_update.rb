@@ -71,7 +71,7 @@ n = 1
   puts "Type the message that you want to register in the thing [#{thing}]:"
   entry = $stdin.readline()
   json_payload = "{\"state\":{\"desired\":{\"message\":\"#{entry.delete!("\n")}\"}}}"
-  my_shadow_client.update_shadow(json_payload, filter_callback, 5)
+  my_shadow_client.update_shadow(json_payload, 5, filter_callback)
   puts "#{3 - n} Message(s) left"
   sleep 2
   n += 1

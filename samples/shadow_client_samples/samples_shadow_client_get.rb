@@ -59,13 +59,13 @@ my_shadow_client.connect
 my_shadow_client.create_shadow_handler_with_name(thing, true)
 
 puts "##### Starting test_shadow_client_get ######"
-my_shadow_client.get_shadow(filter_callback, 4)
+my_shadow_client.get_shadow(4, filter_callback)
 
 puts "##### Starting test_shadow_client_get ######"
-my_shadow_client.get_shadow(nil, 4)
+my_shadow_client.get_shadow(4)
 
 
 puts "##### Starting test_shadow_client_get ######"
-my_shadow_client.get_shadow(filter_callback, 4)
+my_shadow_client.get_shadow(4, filter_callback)
 
 sleep 2

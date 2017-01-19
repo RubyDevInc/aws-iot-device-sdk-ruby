@@ -62,10 +62,10 @@ n = 1
 
 3.times do
   puts "Start shadow_delete\n"
-  my_shadow_client.delete_shadow(filter_callback, 5)
+  my_shadow_client.delete_shadow(5, filter_callback)
   sleep 0.01
   json_payload = '{"state":{"desired":{"property":"RubySDK"}}}'
-  my_shadow_client.update_shadow(json_payload, nil, 5)
+  my_shadow_client.update_shadow(json_payload, 5)
   n += 1
 end
 
