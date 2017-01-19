@@ -215,7 +215,7 @@ module AwsIotDevice
           type.eql?("delete") ? @last_stable_version = -1 : @last_stable_version = new_version
           Thread.new { @topic_subscribed_callback[action].call(message) } unless @topic_subscribed_callback[action].nil?
         else
-          puts "CATCH AN UPDATE BUT OUTDATED/INVALID VERSION (= #{new_version}) FOR TOKEN #{token}\n"
+          puts "CATCH AN UPDATE BUT OUTDATED/INVALID VERSION (= #{new_version})\n"
         end
       end
 
