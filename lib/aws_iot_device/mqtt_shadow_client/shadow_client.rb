@@ -32,7 +32,7 @@ module AwsIotDevice
       end
 
       def get_shadow(timeout=5, callback=nil, &block)
-        @action_manager.shadow_get(timeout, callnback, &block)
+        @action_manager.shadow_get(timeout, callback, &block)
       end
 
       def update_shadow(payload, timeout=5, callback=nil, &block)
