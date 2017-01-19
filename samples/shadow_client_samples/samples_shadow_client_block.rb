@@ -58,20 +58,20 @@ my_shadow_client.configure_credentials(root_ca_path, private_key_path, certifica
 my_shadow_client.connect do |client|
 
   client.create_shadow_handler_with_name(thing, true)
-
+  
   puts "##### Starting test_shadow_client_get ######"
   client.get_shadow(4, filter_callback)
 
-  sleep 1 # let time to execute callback
+  sleep 2 # let time to execute callback
   
   puts "##### Starting test_shadow_client_get ######"
   client.get_shadow(4) do
     puts "CALLED FROM BLOCK"
   end
 
-  sleep 1 # let time to execute callback
+  sleep 2 # let time to execute callback
   
   puts "##### Starting test_shadow_client_get ######"
   client.get_shadow(4, filter_callback)
-  sleep 1
+  sleep 2
 end
