@@ -87,7 +87,6 @@ module AwsIotDevice
         @client.port
       end
 
-
       def port=(port)
         @client.port = port
       end
@@ -144,13 +143,20 @@ module AwsIotDevice
       end
 
       def loop_write
+        puts "loop_write is unavailable for ruby-mqtt client's"
       end
 
       def loop_misc
+        puts "loop_misc is unavailable for ruby-mqtt client's"
       end
 
       def on_message=(callback)
         @on_message = callback
+      end
+
+      def on_message(&block)
+        @on_message = block if block_given?
+        @on_message
       end
 
       def on_message_callback(message)
