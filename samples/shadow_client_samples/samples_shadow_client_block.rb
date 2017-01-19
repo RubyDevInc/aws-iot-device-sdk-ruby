@@ -4,7 +4,7 @@ require 'optparse'
 options = {}
 
 OptionParser.new do |opts|
-  opts.banner = "Basic usage basic_greeting.rb -c \"YOUR_CERTIFICATE_PATH\" -k \"YOUR_KEY_FILE_PATH\" -ca \"YOUR_ROOT_CA_PATH -H \"YOUR_ENDPOINT\" -p 8883\n"
+  opts.banner = "Basic usage basic_greeting.rb -c \"YOUR_CERTIFICATE_PATH\" -k \"YOUR_KEY_FILE_PATH\" -ca \"YOUR_ROOT_CA_PATH -H \"YOUR_ENDPOINT\" -p 8883 -t \"YOUR THING NAME\"\n"
   
   opts.separator ""
   opts.separator "Common options"
@@ -61,15 +61,11 @@ my_shadow_client.connect do |client|
   
   puts "##### Starting test_shadow_client_get ######"
   client.get_shadow(4, filter_callback)
-
-  sleep 2 # let time to execute callback
   
   puts "##### Starting test_shadow_client_get ######"
   client.get_shadow(4) do
     puts "CALLED FROM BLOCK"
   end
-
-  sleep 2 # let time to execute callback
   
   puts "##### Starting test_shadow_client_get ######"
   client.get_shadow(4, filter_callback)
