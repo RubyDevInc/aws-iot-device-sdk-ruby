@@ -69,5 +69,5 @@ my_shadow_client.connect do |client|
   
   puts "##### Starting test_shadow_client_get ######"
   client.get_shadow(4, filter_callback)
-  sleep 2
+  sleep 5
 end
