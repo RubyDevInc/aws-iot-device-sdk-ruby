@@ -72,7 +72,7 @@ module AwsIotDevice
         if topic.nil?
           raise "publish error: topic cannot be nil"
         end
-        @mutex_publish.synchronize{
+        @mutex_publish.synchronize {
           @client.publish(topic,payload, qos, retain)
         }
       end
