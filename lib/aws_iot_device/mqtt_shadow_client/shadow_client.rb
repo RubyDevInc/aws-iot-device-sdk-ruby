@@ -31,16 +31,16 @@ module AwsIotDevice
         @action_manager = ShadowActionManager.new(shadow_name, @topic_manager, is_persistent_subscribe)
       end
 
-      def get_shadow(callback=nil, timeout=5)
-        @action_manager.shadow_get(callback, timeout)
+      def get_shadow(timeout=5, callback=nil, &block)
+        @action_manager.shadow_get(timeout, callnback, &block)
       end
 
-      def update_shadow(payload, callback=nil, timeout=5)
-        @action_manager.shadow_update(payload, callback, timeout)
+      def update_shadow(payload, timeout=5, callback=nil, &block)
+        @action_manager.shadow_update(payload, timeout, callback, &block)
       end
 
-      def delete_shadow(callback=nil, timeout=5)
-        @action_manager.shadow_delete(callback, timeout)
+      def delete_shadow(timeout=5, callback=nil, &block)
+        @action_manager.shadow_delete(timeout, callback, &block)
       end
 
       def register_delta_callback(callback)

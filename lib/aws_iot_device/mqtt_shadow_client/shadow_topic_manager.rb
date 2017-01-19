@@ -10,8 +10,10 @@ module AwsIotDevice
         end
         @mqtt_manager = mqtt_manager
         @sub_unsub_mutex = Mutex.new()
-        @mqtt_manager.on_suback = proc { @subacked = true }
-        @mqtt_manager.on_unsuback = proc { @unsubacked = true }
+        if @mqtt_manager.paho_client?
+          @mqtt_manager.on_suback = proc { @subacked = true }
+          @mqtt_manager.on_unsuback = proc { @unsubacked = true }
+        end
         @subacked = false
         @unsubacked = false
         @timeout = @mqtt_manager.mqtt_operation_timeout_s
@@ -35,9 +37,14 @@ module AwsIotDevice
           else
             @mqtt_manager.subscribe_bunch([topic.get_topic_accepted, 0, callback], [topic.get_topic_rejected, 0, callback])
           end
-          ref = Time.now + timeout
-          while !@subacked && valid_packet(ref) do
-            sleep 0.001
+          if @mqtt_manager.paho_client?
+            ref = Time.now + timeout
+            while !@subacked && valid_packet(ref) do
+              sleep 0.001
+            end
+          else
+            sleep 2
+            @subacked = true
           end
         }
         @subacked
@@ -52,9 +59,14 @@ module AwsIotDevice
           else
             @mqtt_manager.unsubscribe_bunch(topic.get_topic_accepted, topic.get_topic_rejected)
           end
-          ref = Time.now + timeout
-          while !@subacked && valid_packet(ref) do
-            sleep 0.001
+          if @mqtt_manager.paho_client?
+            ref = Time.now + timeout
+            while !@unsubacked && valid_packet(ref) do
+              sleep 0.001
+            end
+          else
+            sleep 2
+            @unsubacked = true
           end
         }
         @unsubacked

@@ -116,31 +116,31 @@ module AwsIotDevice
       end
 
       def on_connack=(callback)
-        @client.on_connack = callback
+        @client.on_connack = callback if paho_client?
       end
 
       def on_suback=(callback)
-        @client.on_suback = callback
+        @client.on_suback = callback if paho_client?
       end
 
       def on_unsuback=(callback)
-        @client.on_unsuback = callback
+        @client.on_unsuback = callback if paho_client?
       end
 
       def on_puback=(callback)
-        @client.on_puback = callback
+        @client.on_puback = callback if paho_client?
       end
 
       def on_pubrec=(callback)
-        @client.on_pubrec = callback
+        @client.on_pubrec = callback if paho_client?
       end
 
       def on_pubrel=(callback)
-        @client.on_pubrel = callback
+        @client.on_pubrel = callback if paho_client?
       end
 
       def on_pubcomp=(callback)
-        @client.on_pubcomp = callback
+        @client.on_pubcomp = callback if paho_client?
       end
 
       def on_message=(callback)
@@ -148,31 +148,31 @@ module AwsIotDevice
       end
 
       def on_connack(&block)
-        @client.on_connack(&block)
+        @client.on_connack(&block) if paho_client?
       end
 
       def on_suback(&block)
-        @client.on_suback(&block)
+        @client.on_suback(&block) if paho_client?
       end
 
       def on_unsuback(&block)
-        @client.on_unsuback(&block)
+        @client.on_unsuback(&block) if paho_client?
       end
 
       def on_puback(&block)
-        @client.on_puback(&block)
+        @client.on_puback(&block) if paho_client?
       end
 
       def on_pubrec(&block)
-        @client.on_pubrec(&block)
+        @client.on_pubrec(&block) if paho_client?
       end
 
       def on_pubrel(&block)
-        @client.on_pubrel(&block)
+        @client.on_pubrel(&block) if paho_client?
       end
 
       def on_pubcomp(&block)
-        @client.on_pubcomp(&block)
+        @client.on_pubcomp(&block) if paho_client?
       end
 
       def on_message(&block)
@@ -185,6 +185,10 @@ module AwsIotDevice
 
       def remove_topic_callback(topic)
         @client.remove_callback_filter_topic(topic)
+      end
+
+      def paho_client?
+        @client.adapter.class == MqttAdapter::PahoMqttAdapter
       end
 
       private

@@ -105,12 +105,16 @@ module AwsIotDevice
       ### Returns :
       ###   > the token associate to the current action (which also store in @token_pool)
 
-      def shadow_get(callback=nil, timeout=5)
+      def shadow_get(timeout=5, callback=nil, &block)
         current_token = Symbol
         timer = Timers::Group.new
         json_payload = ""
         @general_action_mutex.synchronize(){
-          @topic_subscribed_callback[:get] = callback
+          if callback.is_a?(Proc)
+            @topic_subscribed_callback[:get] = callback
+          elsif block_given?
+            @topic_subscribed_callback[:get] = block
+          end
           @topic_subscribed_task_count[:get] += 1
           current_token = @token_handler.create_next_token
           timer.after(timeout){ timeout_manager(:get, current_token) }
@@ -126,13 +130,15 @@ module AwsIotDevice
         }
       end
 
-      def shadow_update(payload, callback, timeout)
+      def shadow_update(payload, timeout=5, callback=nil, &block)
         current_token = Symbol
         timer = Timers::Group.new
         json_payload = ""
         @general_action_mutex.synchronize(){
           if callback.is_a?(Proc)
             @topic_subscribed_callback[:update] = callback
+          elsif block_given?
+            @topic_subscribed_callback[:update] = block
           end
           @topic_subscribed_task_count[:update] += 1
           current_token = @token_handler.create_next_token
@@ -150,13 +156,15 @@ module AwsIotDevice
         }
       end
 
-      def shadow_delete(callback, timeout)
+      def shadow_delete(timeout=5, callback=nil, &block)
         current_token = Symbol
         timer = Timers::Group.new
         json_payload = ""
         @general_action_mutex.synchronize(){
           if callback.is_a?(Proc)
             @topic_subscribed_callback[:delete] = callback
+          elsif block_given?
+            @topic_subscribed_callback[:delete] = block
           end
           @topic_subscribed_task_count[:delete] += 1
           current_token = @token_handler.create_next_token
