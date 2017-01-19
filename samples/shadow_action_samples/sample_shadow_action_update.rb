@@ -47,11 +47,9 @@ thing = options[:things]
 
 mqtt_client = AwsIotDevice::MqttShadowClient::MqttManager.new(host: host,
                              port: port,
-                             ssl: true,
-                             cert_file: cert_file_path,
-                             key_file: key_file_path,
-                             ca_file: ca_file_path)
+                             ssl: true)
 
+mqtt_client.config_ssl_context(ca_file_path, key_file_path, cert_file_path)
 mqtt_client.connect
 
 filter_callback = Proc.new do |message|
@@ -70,7 +68,7 @@ n = 1
 
 5.times do
   json_payload = "{\"state\":{\"desired\":{\"property\":\"RubySDK\",\"count\":#{n}}}}"
-  client.shadow_update(json_payload, timout, filter_callback)
+  client.shadow_update(json_payload, timeout, filter_callback)
   n += 1
 end
 
