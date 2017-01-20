@@ -37,14 +37,12 @@ OptionParser.new do |opts|
   end
 end.parse!(ARGV)
 
-
 @host = options[:host]
 @port = options[:port] || 8883
 @certificate_path = options[:cert]
 @private_key_path = options[:key]
 @root_ca_path = options[:root_ca]
 @thing = options[:things]
-
 
 def setting_mqtt_client
   mqtt_client = AwsIotDevice::MqttShadowClient::MqttManager.new(host: @host,
@@ -64,8 +62,6 @@ def setting_action_manager(mqtt_client)
   action_manager = AwsIotDevice::MqttShadowClient::ShadowActionManager.new(@thing, topic_manager, false)
   action_manager
 end
-
-
 
 def setting_shadow
   shadow_client = AwsIotDevice::MqttShadowClient::ShadowClient.new

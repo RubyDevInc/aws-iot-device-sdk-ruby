@@ -22,7 +22,6 @@ n = 1
   json_payload = "{\"state\":{\"desired\":{\"message\":\"#{entry.delete!("\n")}\"}}}"
   my_shadow_client.update_shadow(json_payload, 5, filter_callback)
   puts "#{3 - n} Message(s) left"
-  sleep 2
   n += 1
 end
 
