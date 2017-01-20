@@ -7,7 +7,7 @@
 # AWS IoT Device SDK for Ruby
 
 ## Contents
-* [Dependencies](#depencies)
+* [Dependencies](#dependencies)
 * [Overview](#overview)
 * [Installation](#installation)
 * [Usage](#usage)
