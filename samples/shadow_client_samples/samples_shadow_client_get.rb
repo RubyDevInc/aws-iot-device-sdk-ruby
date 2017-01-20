@@ -62,7 +62,9 @@ puts "##### Starting test_shadow_client_get ######"
 my_shadow_client.get_shadow(4, filter_callback)
 
 puts "##### Starting test_shadow_client_get ######"
-my_shadow_client.get_shadow(4)
+my_shadow_client.get_shadow do
+  puts "Block callback for a token"
+end
 
 puts "##### Starting test_shadow_client_get ######"
 my_shadow_client.get_shadow(4, filter_callback)
