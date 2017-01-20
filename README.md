@@ -51,6 +51,31 @@ bundle install
 ```
 ## Usage
 ### Getting started
+
+```ruby
+require "aws_iot_device"
+
+host = "AWS IoT endpoint"
+port = 8883
+thing = "Thing name"
+
+root_ca_path = "Path to CA certificate"
+private_key_path = "Path to private key"
+certificate_path = "Path to certificate"
+
+shadow_client = AwsIoTDevice::MqttShadowClient.new
+shadow_client.configure(host, port)
+shadow_client.conigure_credentials(root_ca_path, private_key_path, certificate_path)
+shadow_client = create_shadow_handler_with_name(thing, true)
+
+shadow_client.connect
+shadow_client.get_shadow do |message|
+  # Do what you want with the get answer
+end
+sleep 2 #Timer to waiting answer
+
+shadow_client.disconnect
+```
 ### Sample files
 ## API Description
 ### Shadow Client
