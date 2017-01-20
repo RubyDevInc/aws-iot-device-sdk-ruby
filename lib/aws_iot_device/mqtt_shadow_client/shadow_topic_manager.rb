@@ -78,7 +78,7 @@ module AwsIotDevice
       private
 
       def valid_packet(ref)
-        Time.now >= ref
+        Time.now <= ref
       end
     end
   end
