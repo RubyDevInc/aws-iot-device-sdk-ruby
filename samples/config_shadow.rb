@@ -45,6 +45,28 @@ end.parse!(ARGV)
 @root_ca_path = options[:root_ca]
 @thing = options[:things]
 
+
+def setting_mqtt_client
+  mqtt_client = AwsIotDevice::MqttShadowClient::MqttManager.new(host: @host,
+                                                                port: @port,
+                                                                ssl: true)
+  mqtt_client.config_ssl_context(@root_ca_path, @private_key_path, @certificate_path)
+  mqtt_client.connect
+  mqtt_client
+end
+
+def setting_topic_manager(mqtt_client)
+  topic_manager = AwsIotDevice::MqttShadowClient::ShadowTopicManager.new(mqtt_client, @thing)
+end
+
+def setting_action_manager(mqtt_client)
+  topic_manager = setting_topic_manager(mqtt_client)
+  action_manager = AwsIotDevice::MqttShadowClient::ShadowActionManager.new(@thing, topic_manager, false)
+  action_manager
+end
+
+
+
 def setting_shadow
   shadow_client = AwsIotDevice::MqttShadowClient::ShadowClient.new
   shadow_client.configure_endpoint(@host, @port)

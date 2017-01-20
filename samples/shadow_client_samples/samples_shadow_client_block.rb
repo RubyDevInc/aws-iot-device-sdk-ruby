@@ -1,4 +1,4 @@
-$:.unshift(File.dirname(__FILE__))
+$:.unshift(File.expand_path("../../../samples", __FILE__))
 
 require 'aws_iot_device'
 require 'config_shadow'
