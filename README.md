@@ -29,12 +29,7 @@ Ruby gems:
 - paho-mqtt >= 0.0.2
 
 ## Overview
-The AWS IoT SDK for Ruby is a gems which enables to manage device registered as shadow/things on the AWS IoT platform. A shadow is a JSON document that describes the state of a associated thing(app, device, sensor,...). The JSON document is divided in two part, the desired and the reported state of the thing. Three operations could be done on the Shadow: 
-- Get: read the current state of the shadow
-- Update: add, change or remove the attribute value of the shadow
-- Delete: clear all the attribute value of the shadow
-
-The client communicates with the AWS IoT platform through the MQTT protocol. An adapter is provided to enable several implementations of the MQTT protocol and thus make the client independent form its back-end library implementation. In the current version, the default settings are using a client based on the ruby-mqtt gems. According to the shadow management, the operations are performed by sending message on the dedicated MQTT topics. The answer could be read on the corresponding MQTT topics, then some treatments could be processed thanks to a system of callback.
+`aws_iot_device` is a gems that enables a remote client to communicate with the AWS IoT platform. The AWS IoT platform allow to register a device as a `thing`, each `thing` has a `shadow` that store the `thing`(device) status. The API provided by the gems use the MQTT protocol to control the shadow/things registered on the AWS IoT platform. The MQTT protocols is a lightweigth protocol used to exchange short message between a client and a message broker. The message borker is located on the AWS IoT platform, and the client is provided by the `aws_iot_device`, the default client is the `paho-mqtt` one. The `paho-mqtt` client provide a MQTT API and a callback system to handle the events trigger by the mqtt packages.
 
 ## Installation
 The gem is still in a beta version. There are two ways to install it, from the `gem` command or directly from sources.
