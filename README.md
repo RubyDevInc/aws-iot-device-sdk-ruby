@@ -3,17 +3,32 @@
 [![Gem Version](https://badge.fury.io/rb/aws_iot_device.svg)](https://badge.fury.io/rb/aws_iot_device)
 
 
+
 # AWS IoT Device SDK for Ruby
 
-## Requirements
-Ruby gems:
-- ruby ~> 2.2
-- mqtt ~> 0.4
-- json ~> 2.0
-- facets ~> 3.1
-- timers ~> 4.1
+## Contents
+* [Dependencies](#depencies)
+* [Overview](#overview)
+* [Installation](#installation)
+* [Usage](#usage)
+  * [Getting started](#getting-started)
+  * [Sample files](#sample-files)
+* [API Description](#api-description)
+  * [Shadow Client](#shadow-client)
+  * [MQTT Adapter](#mqtt-adapter)
+* [License](#license)
+* [Contact](#contact)
 
-## Introduction
+## Dependencies
+Ruby gems:
+- ruby >= 2.2
+- mqtt >= 0.0.2
+- json >= 2.0
+- facets >= 3.1
+- timers >= 4.1
+- paho-mqtt >= 0.0.2
+
+## Overview
 The AWS IoT SDK for Ruby is a gems which enables to manage device registered as shadow/things on the AWS IoT platform. A shadow is a JSON document that describes the state of a associated thing(app, device, sensor,...). The JSON document is divided in two part, the desired and the reported state of the thing. Three operations could be done on the Shadow: 
 - Get: read the current state of the shadow
 - Update: add, change or remove the attribute value of the shadow
@@ -39,6 +54,14 @@ git clone https://github.com/RubyDevInc/aws-iot-device-sdk-ruby.git
 cd aws-iot-device-sdk-ruby
 bundle install
 ```
+## Usage
+### Getting started
+### Sample files
+## API Description
+### Shadow Client
+### MQTT Adapter
+## License
+## Contact
 
 ## Using the ShadowClient
 Some examples files are provided in the samples directory. They could be run by the following commands:
