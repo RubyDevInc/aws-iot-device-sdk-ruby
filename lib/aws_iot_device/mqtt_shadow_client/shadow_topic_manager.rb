@@ -32,7 +32,7 @@ module AwsIotDevice
         @mqtt_manager.publish(@topic.get_topic_general(action), payload, false, 0)
       end
 
-      def shadow_topic_subscribe(action, callback=nil, timeout=@timeout)
+      def shadow_topic_subscribe(action, callback=nil)
         @sub_unsub_mutex.synchronize() {
           @subacked = false
           if @topic.is_delta?(action)
@@ -40,20 +40,11 @@ module AwsIotDevice
           else
            @mqtt_manager.subscribe_bunch([@topic.get_topic_accepted(action), 0, callback], [@topic.get_topic_rejected(action), 0, callback])
           end
-          if @mqtt_manager.paho_client?
-            ref = Time.now + timeout
-            while !@subacked && valid_packet(ref) do
-              sleep 0.001
-            end
-          else
-            sleep 2
-            @subacked = true
-          end
+          handle_timeout("subscribe")
         }
-        @subacked
       end
-
-      def shadow_topic_unsubscribe(action, timeout=@timeout)
+          
+      def shadow_topic_unsubscribe(action)
         @sub_unsub_mutex.synchronize(){
           @unsubacked = false
           if @topic.is_delta?(action)
@@ -61,24 +52,39 @@ module AwsIotDevice
           else
             @mqtt_manager.unsubscribe_bunch(@topic.get_topic_accepted(action), @topic.get_topic_rejected(action))
           end
-          if @mqtt_manager.paho_client?
-            ref = Time.now + timeout
-            while !@unsubacked && valid_packet(ref) do
-              sleep 0.001
-            end
-          else
-            sleep 2
-            @unsubacked = true
-          end
+          handle_timeout("unsubscribe")
         }
-        @unsubacked
       end
-
-
+      
+      
       private
 
-      def valid_packet(ref)
-        Time.now <= ref
+      def handle_timeout(action)
+        if @mqtt_manager.paho_client?
+          ref = Time.now + @timeout
+          if action == "subscribe"
+            handle_timeout_subscribe(ref)
+          elsif action == "unsubscribe"
+            handle_timeout_unsubscribe(ref)
+          end
+        else
+          sleep 2
+          true
+        end
+      end
+
+      def handle_timeout_subscribe(ref)
+        while !@subacked && Time.now <= ref do
+          sleep 0.001
+        end
+        @subacked
+      end
+
+      def handle_timeout_unsubscribe(ref)
+        while !@unsubacked && Time.now <= ref do
+          sleep 0.001
+        end
+        @unsubacked
       end
     end
   end

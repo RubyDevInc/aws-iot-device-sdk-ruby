@@ -6,11 +6,10 @@ module AwsIotDevice
       def initialize(shadow_name)
         if shadow_name.nil?
           raise "shadow_name_error: shadow_name is required but undefined"
-
         end
-
+        
         @shadow_name = shadow_name
-
+        
         @topic_delta = "$aws/things/#{shadow_name}/shadow/update/delta"
         @topic_general = "$aws/things/#{shadow_name}/shadow/"
       end
