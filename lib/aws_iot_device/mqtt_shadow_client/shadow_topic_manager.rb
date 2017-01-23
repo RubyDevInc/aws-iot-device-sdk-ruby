@@ -58,25 +58,33 @@ module AwsIotDevice
       
       
       private
-      
+
       def handle_timeout(action)
         if @mqtt_manager.paho_client?
           ref = Time.now + @timeout
           if action == "subscribe"
-            while !@subacked && Time.now <= ref do
-              sleep 0.001
-            end
-            @subacked
+            handle_timeout_subscribe(ref)
           elsif action == "unsubscribe"
-            while !@unsubacked && Time.now <= ref do
-              sleep 0.001
-            end
-            @unsubacked
+            handle_timeout_unsubscribe(ref)
           end
         else
           sleep 2
           true
         end
+      end
+
+      def handle_timeout_subscribe(ref)
+        while !@subacked && Time.now <= ref do
+          sleep 0.001
+        end
+        @subacked
+      end
+
+      def handle_timeout_unsubscribe(ref)
+        while !@unsubacked && Time.now <= ref do
+          sleep 0.001
+        end
+        @unsubacked
       end
     end
   end
