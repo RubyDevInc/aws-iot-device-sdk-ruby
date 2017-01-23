@@ -41,9 +41,11 @@ module AwsIotDevice
            @mqtt_manager.subscribe_bunch([@topic.get_topic_accepted(action), 0, callback], [@topic.get_topic_rejected(action), 0, callback])
           end
           handle_timeout(@subacked)
+        }
         @subacked
       end
-
+      
+          
       def shadow_topic_unsubscribe(action, timeout=@timeout)
         @sub_unsub_mutex.synchronize(){
           @unsubacked = false
@@ -53,12 +55,13 @@ module AwsIotDevice
             @mqtt_manager.unsubscribe_bunch(@topic.get_topic_accepted(action), @topic.get_topic_rejected(action))
           end
           handle_timeout(@unsubacked)
+        }
         @unsubacked
       end
-
-
+      
+      
       private
-
+      
       def handle_timeout(flag)
         if @mqtt_manager.paho_client?
           ref = Time.now + timeout
