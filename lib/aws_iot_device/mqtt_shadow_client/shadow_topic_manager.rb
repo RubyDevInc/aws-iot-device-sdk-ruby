@@ -40,16 +40,7 @@ module AwsIotDevice
           else
            @mqtt_manager.subscribe_bunch([@topic.get_topic_accepted(action), 0, callback], [@topic.get_topic_rejected(action), 0, callback])
           end
-          if @mqtt_manager.paho_client?
-            ref = set_time_reference(timeout)
-            while !@subacked && valid_packet(ref) do
-              sleep 0.001
-            end
-          else
-            sleep 2
-            @subacked = true
-          end
-        }
+          handle_timeout(@subacked)
         @subacked
       end
 
@@ -61,28 +52,23 @@ module AwsIotDevice
           else
             @mqtt_manager.unsubscribe_bunch(@topic.get_topic_accepted(action), @topic.get_topic_rejected(action))
           end
-          if @mqtt_manager.paho_client?
-            ref = set_time_reference(timeout)
-            while !@unsubacked && valid_packet(ref) do
-              sleep 0.001
-            end
-          else
-            sleep 2
-            @unsubacked = true
-          end
-        }
+          handle_timeout(@unsubacked)
         @unsubacked
       end
 
 
       private
 
-      def valid_packet(ref)
-        Time.now <= ref
-      end
-
-      def set_time_reference(timeout)
-        Time.now + timeout
+      def handle_timeout(flag)
+        if @mqtt_manager.paho_client?
+          ref = Time.now + timeout
+          while !flag && Time.now <= ref do
+            sleep 0.001
+          end
+        else
+          sleep 2
+          flag = true
+        end
       end
     end
   end
