@@ -3,26 +3,37 @@
 [![Gem Version](https://badge.fury.io/rb/aws_iot_device.svg)](https://badge.fury.io/rb/aws_iot_device)
 
 
+
 # AWS IoT Device SDK for Ruby
 
-## Requirements
+## Contents
+* [Dependencies](#dependencies)
+* [Overview](#overview)
+* [Installation](#installation)
+* [Usage](#usage)
+  * [Getting started](#getting-started)
+  * [Sample files](#sample-files)
+* [API Description](#api-description)
+  * [Shadow Client](#shadow-client)
+  * [MQTT Adapter](#mqtt-adapter)
+* [License](#license)
+* [Contact](#contact)
+
+## Dependencies
 Ruby gems:
-- ruby ~> 2.2
-- mqtt ~> 0.4
-- json ~> 2.0
-- facets ~> 3.1
-- timers ~> 4.1
+- ruby >= 2.2
+- mqtt >= 0.0.2
+- json >= 2.0
+- facets >= 3.1
+- timers >= 4.1
+- paho-mqtt >= 0.0.2
 
-## Introduction
-The AWS IoT SDK for Ruby is a gems which enables to manage device registered as shadow/things on the AWS IoT platform. A shadow is a JSON document that describes the state of a associated thing(app, device, sensor,...). The JSON document is divided in two part, the desired and the reported state of the thing. Three operations could be done on the Shadow: 
-- Get: read the current state of the shadow
-- Update: add, change or remove the attribute value of the shadow
-- Delete: clear all the attribute value of the shadow
-
-The client communicates with the AWS IoT platform through the MQTT protocol. An adapter is provided to enable several implementations of the MQTT protocol and thus make the client independent form its back-end library implementation. In the current version, the default settings are using a client based on the ruby-mqtt gems. According to the shadow management, the operations are performed by sending message on the dedicated MQTT topics. The answer could be read on the corresponding MQTT topics, then some treatments could be processed thanks to a system of callback.
+## Overview
+`aws_iot_device` is a gem that enables a remote client to communicate with the AWS IoT platform. The AWS IoT platform allows to register a device as a `thing`, each `thing` is referred by a `shadow` that stores the `thing` (device) status. The gem uses the MQTT protocol to control the `thing` registered on the AWS IoT platform. The MQTT protocol is a lightweight protocol used to exchange short messages between a client and a message broker. The message broker is located on the AWS IoT platform, and the client is provided by the `aws_iot_device` gem, the default client is the `paho-mqtt`. The `paho-mqtt` client has a MQTT API and a callback system to handle the events trigger by the mqtt packages.
 
 ## Installation
-The gem is still in a beta version. There are two ways to install it, from the `gem` command or directly from sources.
+The gem is currentely in a unstable version, features are available but any improvement is welcome :).  
+There are two ways to install it, from the `gem` command or directly from sources.
 - From RubyGems:
 
 The gem may be find on [RubyGems](https://rubygems.org/gems/aws_iot_device) and installed with the following command:
@@ -39,6 +50,54 @@ git clone https://github.com/RubyDevInc/aws-iot-device-sdk-ruby.git
 cd aws-iot-device-sdk-ruby
 bundle install
 ```
+## Usage
+### Getting started
+The following example is a strait forward way to use shadows. Check at the samples files for more detailed usage.
+```ruby
+require "aws_iot_device"
+
+host = "AWS IoT endpoint"
+port = 8883
+thing = "Thing name"
+
+root_ca_path = "Path to CA certificate"
+private_key_path = "Path to private key"
+certificate_path = "Path to certificate"
+
+shadow_client = AwsIoTDevice::MqttShadowClient.new
+shadow_client.configure(host, port)
+shadow_client.conigure_credentials(root_ca_path, private_key_path, certificate_path)
+shadow_client = create_shadow_handler_with_name(thing, true)
+
+shadow_client.connect
+shadow_client.get_shadow do |message|
+  # Do what you want with the get_shadow's answer
+  p ":)"
+end
+sleep 2 #Timer to ensure that the answer is received
+
+shadow_client.disconnect
+```
+### Sample files
+Once you have cloned that repository the several samples files provide test on the API a multiple levels.
+The shadow examples could be run with the following command :
+```
+ruby samples/shadow_client_samples/samples_xx(action_or_callback).rb -c "CERTIFICATE PATH" -k "PRIVATE KEY PATH"  -a "ROOT CA CERTIFICATE PATH" -H "ENDPOINT ON AWS IOT" -t "THING'S NAME"
+```
+
+## API Description
+Thank you very much for your interst in the `aws_iot_device` gem. The following part details all the features available with this gem.
+### Shadow Client
+The shadow client API provide the key functions which are needed to control a thing/shadow on the Aws IoT platform.
+
+```ruby
+require `aws_iot_device`
+
+
+```
+### MQTT Adapter
+## License
+## Contact
 
 ## Usage
 ### Getting started
