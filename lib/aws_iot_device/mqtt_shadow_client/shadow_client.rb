@@ -55,7 +55,7 @@ module AwsIotDevice
         @action_manager.register_delete_callback(callback, &block)
       end
 
-      def register_delta_callback(callback)
+      def register_delta_callback(callback=nil, &block)
         @action_manager.register_shadow_delta_callback(callback, &block)
       end
 

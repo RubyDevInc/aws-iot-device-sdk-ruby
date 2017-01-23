@@ -131,9 +131,13 @@ module AwsIotDevice
         register_action_callback(:delete, callback, &block)
       end
 
-      def register_shadow_delta_callback(callback)
+      def register_shadow_delta_callback(callback, &block)
         @general_action_mutex.synchronize() {
-          @topic_subscribed_callback[:delta] = callback
+          if callback.is_a?(Proc)
+            @topic_subscribed_callback[:delta] = callback
+          elsif block_given?
+            @topic_subscribed_callback[:delta] = block
+          end
           @topic_manager.shadow_topic_subscribe("delta", @default_callback)
         }
       end
