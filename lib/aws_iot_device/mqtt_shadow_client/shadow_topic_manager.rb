@@ -32,7 +32,7 @@ module AwsIotDevice
         @mqtt_manager.publish(@topic.get_topic_general(action), payload, false, 0)
       end
 
-      def shadow_topic_subscribe(action, callback=nil, timeout=@timeout)
+      def shadow_topic_subscribe(action, callback=nil)
         @sub_unsub_mutex.synchronize() {
           @subacked = false
           if @topic.is_delta?(action)
@@ -46,7 +46,7 @@ module AwsIotDevice
       end
       
           
-      def shadow_topic_unsubscribe(action, timeout=@timeout)
+      def shadow_topic_unsubscribe(action)
         @sub_unsub_mutex.synchronize(){
           @unsubacked = false
           if @topic.is_delta?(action)
@@ -64,7 +64,7 @@ module AwsIotDevice
       
       def handle_timeout(flag)
         if @mqtt_manager.paho_client?
-          ref = Time.now + timeout
+          ref = Time.now + @timeout
           while !flag && Time.now <= ref do
             sleep 0.001
           end
