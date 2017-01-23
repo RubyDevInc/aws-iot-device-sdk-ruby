@@ -32,7 +32,8 @@ Ruby gems:
 `aws_iot_device` is a gem that enables a remote client to communicate with the AWS IoT platform. The AWS IoT platform allows to register a device as a `thing`, each `thing` is referred by a `shadow` that stores the `thing` (device) status. The gem uses the MQTT protocol to control the `thing` registered on the AWS IoT platform. The MQTT protocol is a lightweight protocol used to exchange short messages between a client and a message broker. The message broker is located on the AWS IoT platform, and the client is provided by the `aws_iot_device` gem, the default client is the `paho-mqtt`. The `paho-mqtt` client has a MQTT API and a callback system to handle the events trigger by the mqtt packages.
 
 ## Installation
-The gem is still in a beta version. There are two ways to install it, from the `gem` command or directly from sources.
+The gem is currentely in a unstable version, features are available but any improvement is welcome :).  
+There are two ways to install it, from the `gem` command or directly from sources.
 - From RubyGems:
 
 The gem may be find on [RubyGems](https://rubygems.org/gems/aws_iot_device) and installed with the following command:
@@ -77,6 +78,18 @@ sleep 2 #Timer to waiting answer
 shadow_client.disconnect
 ```
 ### Sample files
+<<<<<<< Updated upstream
+=======
+There are many samples files that intend to make you understand the API, the most intersing may be found in the `samples/shadow_client_samples` repository. In order to excute one of those samples, you just need to clone the source.
+```
+git  clone https://github.com/RubyDevInc/aws-iot-device-sdk-ruby
+```
+Then go to the samples directory and try out the following files
+```
+$ ruby samples/shadow_client_samples/samples_client_ -c "PATH TO YOUR CERTIFICATE" -k "PATH TO YOUR PRIVATE KEY"  -a "PATH TO YOUR CA CERTICATE" -H "YOUR AWS IOT ENDPOINT" -t "YOUR THING NAME"
+```
+
+>>>>>>> Stashed changes
 ## API Description
 ### Shadow Client
 ### MQTT Adapter
