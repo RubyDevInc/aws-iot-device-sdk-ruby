@@ -34,7 +34,7 @@ end
 shadow_client.register_delete_callback(proc { puts "generic callback for delete action"})
 
 # Register a callback for the update action as a lambda
-shadow_client.register_update_callback(lambda {|message| puts "genereic callback for update action"})
+shadow_client.register_update_callback(lambda {|_message| puts "generic callback for update action"})
 
 # Register a callback for the delta events
 shadow_client.register_delta_callback do
@@ -50,15 +50,15 @@ end
 shadow_client.delete_shadow(timeout, proc {puts "delete thing"})
 
 # Send a udpate request with an associated callback in a lambda
-shadow_client.update_shadow("{\"state\":{\"desired\":{\"message\":\"Hello\"}}}", timeout, lambda {|message| puts "update thing"})
+shadow_client.update_shadow("{\"state\":{\"desired\":{\"message\":\"Hello\"}}}", timeout, lambda {|_message| puts "update thing"})
+
+# Sleep to assert all opereation have been processed
+sleep timeout
 
 # Clear out the previously registered callback for each action
 shadow_client.remove_get_callback
 shadow_client.remove_update_callback
 shadow_client.remove_delete_callback
-
-# Sleep to assert all opereation have been processed
-sleep timeout
 
 # Explicit disconnect from the AWS IoT platform
 shadow_client.disconnect

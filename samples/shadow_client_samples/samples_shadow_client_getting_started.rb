@@ -13,7 +13,7 @@ shadow_client.configure_credentials(root_ca_path, private_key_path, certificate_
 shadow_client.create_shadow_handler_with_name(thing, true)
 
 shadow_client.connect
-shadow_client.get_shadow do |message|
+shadow_client.get_shadow do |_message|
   # Do what you want with the get_shadow's answer
   p ":)"
 end
