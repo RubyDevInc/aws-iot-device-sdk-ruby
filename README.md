@@ -52,7 +52,7 @@ bundle install
 ```
 ## Usage
 ### Getting started
-
+The following example is a strait forward way to use shadows. Check at the samples files for more detailed usage.
 ```ruby
 require "aws_iot_device"
 
@@ -71,24 +71,30 @@ shadow_client = create_shadow_handler_with_name(thing, true)
 
 shadow_client.connect
 shadow_client.get_shadow do |message|
-  # Do what you want with the get answer
+  # Do what you want with the get_shadow's answer
+  p ":)"
 end
-sleep 2 #Timer to waiting answer
+sleep 2 #Timer to ensure that the answer is received
 
 shadow_client.disconnect
 ```
 ### Sample files
-There are many samples files that intend to make you understand the API, the most intersing may be found in the `samples/shadow_client_samples` repository. In order to excute one of those samples, you just need to clone the source.
+Once you have cloned that repository the several samples files provide test on the API a multiple levels.
+The shadow examples could be run with the following command :
 ```
-git  clone https://github.com/RubyDevInc/aws-iot-device-sdk-ruby
-```
-Then go to the samples directory and try out the following files
-```
-$ ruby samples/shadow_client_samples/samples_client_ -c "PATH TO YOUR CERTIFICATE" -k "PATH TO YOUR PRIVATE KEY"  -a "PATH TO YOUR CA CERTICATE" -H "YOUR AWS IOT ENDPOINT" -t "YOUR THING NAME"
+ruby samples/shadow_client_samples/samples_xx(action_or_callback).rb -c "CERTIFICATE PATH" -k "PRIVATE KEY PATH"  -a "ROOT CA CERTIFICATE PATH" -H "ENDPOINT ON AWS IOT" -t "THING'S NAME"
 ```
 
 ## API Description
+Thank you very much for your interst in the `aws_iot_device` gem. The following part details all the features available with this gem.
 ### Shadow Client
+The shadow client API provide the key functions which are needed to control a thing/shadow on the Aws IoT platform.
+
+```ruby
+require `aws_iot_device`
+
+
+```
 ### MQTT Adapter
 ## License
 ## Contact
