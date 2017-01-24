@@ -22,7 +22,7 @@ module AwsIotDevice
       end
 
       def create_shadow_handler_with_name(shadow_name, is_persistent_subscribe=false)
-        @action_manager = ShadowActionManager.new(shadow_name, self.topic_manager(shadow_name), is_persistent_subscribe)
+        @action_manager = ShadowActionManager.new(shadow_name, @mqtt_client, is_persistent_subscribe)
       end
 
       def get_shadow(timeout=5, callback=nil, &block)
@@ -79,17 +79,6 @@ module AwsIotDevice
 
       def configure_credentials(ca_file, key, cert)
         @mqtt_client.config_ssl_context(ca_file, key, cert)
-      end
-
-
-      private
-
-      def topic_manager(shadow_name=nil)
-        if @topic_manager.nil?
-          @topic_manager = ShadowTopicManager.new(@mqtt_client, shadow_name)
-        else
-          @topic_manager
-        end
       end
     end
   end

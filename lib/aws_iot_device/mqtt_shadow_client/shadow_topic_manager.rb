@@ -14,18 +14,8 @@ module AwsIotDevice
         end
         @mqtt_manager = mqtt_manager
         @sub_unsub_mutex = Mutex.new()
-        if @mqtt_manager.paho_client?
-          @mqtt_manager.on_suback = proc { @subacked = true }
-          @mqtt_manager.on_unsuback = proc { @unsubacked = true }
-        end
-        @subacked = false
-        @unsubacked = false
         @topic = TopicBuilder.new(shadow_name)
         @timeout = @mqtt_manager.mqtt_operation_timeout_s
-      end
-
-      def client_id
-        @mqtt_manager.client_id
       end
 
       def shadow_topic_publish(action, payload)
@@ -40,7 +30,6 @@ module AwsIotDevice
           else
            @mqtt_manager.subscribe_bunch([@topic.get_topic_accepted(action), 0, callback], [@topic.get_topic_rejected(action), 0, callback])
           end
-          handle_timeout("subscribe")
         }
       end
           
@@ -52,39 +41,27 @@ module AwsIotDevice
           else
             @mqtt_manager.unsubscribe_bunch(@topic.get_topic_accepted(action), @topic.get_topic_rejected(action))
           end
-          handle_timeout("unsubscribe")
         }
       end
-      
-      
-      private
 
-      def handle_timeout(action)
-        if @mqtt_manager.paho_client?
-          ref = Time.now + @timeout
-          if action == "subscribe"
-            handle_timeout_subscribe(ref)
-          elsif action == "unsubscribe"
-            handle_timeout_unsubscribe(ref)
-          end
-        else
-          sleep 2
-          true
-        end
+      def paho_client?
+        @mqtt_manager.paho_client?
+      end
+      
+      def on_suback=(callback)
+        @mqtt_manager.on_suback = callback
       end
 
-      def handle_timeout_subscribe(ref)
-        while !@subacked && Time.now <= ref do
-          sleep 0.001
-        end
-        @subacked
+      def on_suback(&block)
+        @mqtt_manager.on_suback(&block)
       end
 
-      def handle_timeout_unsubscribe(ref)
-        while !@unsubacked && Time.now <= ref do
-          sleep 0.001
-        end
-        @unsubacked
+      def on_unsuback=(callback)
+        @mqtt_manager.on_unsuback = callback 
+      end
+
+      def on_unsuback(&block)
+        @mqtt_manager.on_unsuback(&block)
       end
     end
   end

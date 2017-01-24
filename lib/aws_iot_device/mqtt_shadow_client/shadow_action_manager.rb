@@ -13,15 +13,15 @@ module AwsIotDevice
       ### It enables the time control the time out after an action have been start
       ### Actions requests are send on the general actions topic and answer is retreived from accepted/refused/delta topics
 
-      def initialize(shadow_name, shadow_topic_manager, persistent_subscribe=false)
+      def initialize(shadow_name, mqtt_client, persistent_subscribe=false)
         @shadow_name = shadow_name
-        @topic_manager = shadow_topic_manager
+        @topic_manager = ShadowTopicManager.new(mqtt_client, shadow_name)
         @payload_parser = JSONPayloadParser.new
         @is_subscribed = {}
         @is_subscribed[:get] = false
         @is_subscribed[:update] = false
         @is_subscribed[:delete] = false
-        @token_handler = TokenCreator.new(shadow_name, shadow_topic_manager.client_id)
+        @token_handler = TokenCreator.new(shadow_name, mqtt_client.client_id)
         @persistent_subscribe = persistent_subscribe
         @last_stable_version = -1 #Mean no currentely stable
         @topic_subscribed_callback = {}
@@ -34,8 +34,21 @@ module AwsIotDevice
         @topic_subscribed_task_count[:delete] = 0
         @token_pool = {}
         @token_callback = {}
-        @general_action_mutex = Mutex.new
+        @task_count_mutex = Mutex.new
+        @token_mutex = Mutex.new
+        @parser_mutex = Mutex.new
         @default_callback = proc { |message| do_default_callback(message) }
+        @topic_manager.on_suback = lambda do |topics|
+          action = retrieve_action(topics[0])
+          puts "Subscribe: #{action}"
+          @is_subscribed[action] ||= true unless action.nil?
+        end
+
+        @topic_manager.on_unsuback = lambda do |topics|
+          action = retrive_action(topics)
+          puts "Unsubscribe: #{action}"
+          @is_subscribed[action] = false if action.nil?
+        end
       end
 
       ### Send and publish packet with an empty payload contains in a valid JSON format.
@@ -84,14 +97,12 @@ module AwsIotDevice
       end
 
       def register_shadow_delta_callback(callback, &block)
-        @general_action_mutex.synchronize() {
-          if callback.is_a?(Proc)
-            @topic_subscribed_callback[:delta] = callback
-          elsif block_given?
-            @topic_subscribed_callback[:delta] = block
-          end
-          @topic_manager.shadow_topic_subscribe("delta", @default_callback)
-        }
+        if callback.is_a?(Proc)
+          @topic_subscribed_callback[:delta] = callback
+        elsif block_given?
+          @topic_subscribed_callback[:delta] = block
+        end
+        @topic_manager.shadow_topic_subscribe("delta", @default_callback)
       end
 
       def remove_get_callback
@@ -107,46 +118,45 @@ module AwsIotDevice
       end
 
       def remove_shadow_delta_callback
-        @general_action_mutex.synchronize() {
-          @topic_subscribe_callback.delete[:delta]
-          @topic_manager.shadow_topic_unsubscribe("delta")
-        }
+        @topic_subscribe_callback.delete[:delta]
+        @topic_manager.shadow_topic_unsubscribe("delta")
       end
 
 
       private
 
-
       def shadow_action(action, payload="", timeout=5, callback=nil, &block)
         current_token = Symbol
         timer = Timers::Group.new
         json_payload = ""
-        @general_action_mutex.synchronize(){
+        @token_mutex.synchronize(){
           current_token = @token_handler.create_next_token
-          timer.after(timeout){ timeout_manager(action, current_token) }
+        }
+        timer.after(timeout){ timeout_manager(action, current_token) }
+        @parser_mutex.synchronize {
           @payload_parser.set_message(payload) unless payload == ""
           @payload_parser.set_attribute_value("clientToken", current_token)
           json_payload = @payload_parser.get_json
-          unless @is_subscribed[action]
-            @is_subscribed[action] = @topic_manager.shadow_topic_subscribe(action.to_s, @default_callback)
-          end
-          @topic_manager.shadow_topic_publish(action.to_s, json_payload)
-          @topic_subscribed_task_count[action] += 1
-          @token_pool[current_token] = timer
-          register_token_callback(current_token, callback, &block)
-          Thread.new{ timer.wait }
-          current_token
         }
+        handle_subscription(action, timeout) unless @is_subscribed[action]
+        @topic_manager.shadow_topic_publish(action.to_s, json_payload)
+        @task_count_mutex.synchronize {
+          @topic_subscribed_task_count[action] += 1
+        }
+        @token_pool[current_token] = timer
+        register_token_callback(current_token, callback, &block)
+        Thread.new{ timer.wait }
+        current_token
       end
 
       ### Should cancel the token after a preset time interval
       def timeout_manager(action_name, token)
-        @general_action_mutex.synchronize(){
-          if @token_pool.has_key?(token)
-            action = action_name.to_sym
-            @token_pool.delete(token)
-            @token_callback.delete(token)
-            puts "The #{action_name} request with the token #{token} has timed out!\n"
+        if @token_pool.has_key?(token)
+          action = action_name.to_sym
+          @token_pool.delete(token)
+          @token_callback.delete(token)
+          puts "The #{action_name} request with the token #{token} has timed out!\n"
+          @task_count_mutex.synchronize {
             @topic_subscribed_task_count[action] -= 1
             unless @topic_subscribed_task_count[action] <= 0
               @topic_subscribed_task_count[action] = 0
@@ -155,8 +165,8 @@ module AwsIotDevice
                 @is_subscribed[action.to_sym] = false
               end
             end
-          end
-        }
+          }
+        end
       end
 
       def register_token_callback(token, callback, &block)
@@ -198,32 +208,36 @@ module AwsIotDevice
       ### It acknowledge the accepted status if action success
       ### Call a specific callback for each actions if it defined have been register previously
       def do_default_callback(message)
-        @general_action_mutex.synchronize(){
-          topic = message.topic
-          action = parse_action(topic)
-          type = parse_type(topic)
-          payload = message.payload
+        topic = message.topic
+        action = parse_action(topic)
+        type = parse_type(topic)
+        payload = message.payload
+        token = nil
+        new_version = -1
+        @parser_mutex.synchronize() {
           @payload_parser.set_message(payload)
-          if %w(get update delete).include?(action)
-            token = @payload_parser.get_attribute_value("clientToken")
-            if @token_pool.has_key?(token)
-              @token_pool[token].cancel
-              @token_pool.delete(token)
-              if type.eql?("accepted")
-                do_accepted(message, action.to_sym, type, token)
-              else
-                @token_callback.delete(token)
-              end
-              decresase_task_count(action.to_sym)
+          new_version = @payload_parser.get_attribute_value("version")
+          token = @payload_parser.get_attribute_value("clientToken")
+       }
+        if %w(get update delete).include?(action)
+          if @token_pool.has_key?(token)
+            @token_pool[token].cancel
+            @token_pool.delete(token)
+            if type.eql?("accepted")
+              do_accepted(message, action.to_sym, type, token, new_version)
+            else
+              @token_callback.delete(token)
             end
-          elsif %w(delta).include?(action)
-            do_delta(message)
+            @task_count_mutex.synchronize {
+              decresase_task_count(action.to_sym)
+            }
           end
-        }
+        elsif %w(delta).include?(action)
+          do_delta(message)
+        end
       end
 
-      def do_accepted(message, action, type, token)
-        new_version = @payload_parser.get_attribute_value("version")
+      def do_accepted(message, action, type, token, new_version)
         if new_version && new_version >= @last_stable_version
           type.eql?("delete") ? @last_stable_version = -1 : @last_stable_version = new_version
           Thread.new do
@@ -244,6 +258,36 @@ module AwsIotDevice
         else
           puts "CATCH A DELTA BUT OUTDATED/INVALID VERSION (= #{new_version})\n"
         end
+      end
+
+      def handle_subscription(action, timeout)
+        @topic_manager.shadow_topic_subscribe(action.to_s, @default_callback)
+        if @topic_manager.paho_client?
+          ref = Time.now + timeout
+          while !@is_subscribed[action] && handle_timeout(ref) do
+            sleep 0.0001
+          end
+        else
+          sleep 2
+        end
+      end
+
+      def handle_timeout(ref)
+        Time.now <= ref
+      end
+
+      def retrieve_action(topics)
+        actions = { :get => '/shadow/get/accepted',
+                    :update => '/shadow/update/accepted',
+                    :delete => '/shadow/delete/accepted' }
+        res = nil
+        actions.each_pair do |action, filter|
+          if topics[0] == '$aws/things/' + @shadow_name + filter
+            res = action
+            break
+          end
+        end
+        res
       end
 
       def parse_shadow_name(topic)
