@@ -37,18 +37,7 @@ module AwsIotDevice
         @task_count_mutex = Mutex.new
         @token_mutex = Mutex.new
         @parser_mutex = Mutex.new
-        @default_callback = proc { |message| do_default_callback(message) }
-        @topic_manager.on_suback = lambda do |topics|
-          action = retrieve_action(topics[0])
-          puts "Subscribe: #{action}"
-          @is_subscribed[action] ||= true unless action.nil?
-        end
-
-        @topic_manager.on_unsuback = lambda do |topics|
-          action = retrive_action(topics)
-          puts "Unsubscribe: #{action}"
-          @is_subscribed[action] = false if action.nil?
-        end
+        set_basic_callback
       end
 
       ### Send and publish packet with an empty payload contains in a valid JSON format.
@@ -169,6 +158,20 @@ module AwsIotDevice
         end
       end
 
+      def set_basic_callback
+        @default_callback = proc { |message| do_message_callback(message) }
+
+        @topic_manager.on_suback = lambda do |topics|
+          action = retrieve_action(topics[0])
+          @is_subscribed[action] ||= true unless action.nil?
+        end
+
+        @topic_manager.on_unsuback = lambda do |topics|
+          action = retrive_action(topics)
+          @is_subscribed[action] = false if action.nil?
+        end
+      end
+
       def register_token_callback(token, callback, &block)
         if callback.is_a?(Proc)
           @token_callback[token] = callback
@@ -207,7 +210,7 @@ module AwsIotDevice
       ### The default callback that is called by every actions
       ### It acknowledge the accepted status if action success
       ### Call a specific callback for each actions if it defined have been register previously
-      def do_default_callback(message)
+      def do_message_callback(message)
         topic = message.topic
         action = parse_action(topic)
         type = parse_type(topic)
@@ -218,7 +221,7 @@ module AwsIotDevice
           @payload_parser.set_message(payload)
           new_version = @payload_parser.get_attribute_value("version")
           token = @payload_parser.get_attribute_value("clientToken")
-       }
+        }
         if %w(get update delete).include?(action)
           if @token_pool.has_key?(token)
             @token_pool[token].cancel
