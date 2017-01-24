@@ -38,54 +38,6 @@ module AwsIotDevice
         @default_callback = proc { |message| do_default_callback(message) }
       end
 
-      ### The default callback that is called by every actions
-      ### It acknowledge the accepted status if action success
-      ### Call a specific callback for each actions if it defined have been register previously
-      def do_default_callback(message)
-        @general_action_mutex.synchronize(){
-          topic = message.topic
-          action = parse_action(topic)
-          type = parse_type(topic)
-          payload = message.payload
-          @payload_parser.set_message(payload)
-          if %w(get update delete).include?(action)
-            token = @payload_parser.get_attribute_value("clientToken")
-            if @token_pool.has_key?(token)
-              @token_pool[token].cancel
-              @token_pool.delete(token)
-              if type.eql?("accepted")
-                do_accepted(message, action.to_sym, type, token)
-              else
-                @token_callback.delete(token)
-              end
-              decresase_task_count(action.to_sym)
-            end
-          elsif %w(delta).include?(action)
-            do_delta(message)
-          end
-        }
-      end
-
-      ### Should cancel the token after a preset time interval
-      def timeout_manager(action_name, token)
-        @general_action_mutex.synchronize(){
-          if @token_pool.has_key?(token)
-            action = action_name.to_sym
-            @token_pool.delete(token)
-            @token_callback.delete(token)
-            puts "The #{action_name} request with the token #{token} has timed out!\n"
-            @topic_subscribed_task_count[action] -= 1
-            unless @topic_subscribed_task_count[action] <= 0
-              @topic_subscribed_task_count[action] = 0
-              unless @persistent_subscribe
-                @topic_manager.shadow_topic_unsubscribe(action)
-                @is_subscribed[action.to_sym] = false
-              end
-            end
-          end
-        }
-      end
-
       ### Send and publish packet with an empty payload contains in a valid JSON format.
       ### A unique token is generate and send in the packet in order to trace the action.
       ### Subscribe to the two get/accepted and get/rejected of the coresponding shadow.
@@ -187,6 +139,26 @@ module AwsIotDevice
         }
       end
 
+      ### Should cancel the token after a preset time interval
+      def timeout_manager(action_name, token)
+        @general_action_mutex.synchronize(){
+          if @token_pool.has_key?(token)
+            action = action_name.to_sym
+            @token_pool.delete(token)
+            @token_callback.delete(token)
+            puts "The #{action_name} request with the token #{token} has timed out!\n"
+            @topic_subscribed_task_count[action] -= 1
+            unless @topic_subscribed_task_count[action] <= 0
+              @topic_subscribed_task_count[action] = 0
+              unless @persistent_subscribe
+                @topic_manager.shadow_topic_unsubscribe(action)
+                @is_subscribed[action.to_sym] = false
+              end
+            end
+          end
+        }
+      end
+
       def register_token_callback(token, callback, &block)
         if callback.is_a?(Proc)
           @token_callback[token] = callback
@@ -220,6 +192,34 @@ module AwsIotDevice
             @is_subscribed[action] = false
           end
         end
+      end
+
+      ### The default callback that is called by every actions
+      ### It acknowledge the accepted status if action success
+      ### Call a specific callback for each actions if it defined have been register previously
+      def do_default_callback(message)
+        @general_action_mutex.synchronize(){
+          topic = message.topic
+          action = parse_action(topic)
+          type = parse_type(topic)
+          payload = message.payload
+          @payload_parser.set_message(payload)
+          if %w(get update delete).include?(action)
+            token = @payload_parser.get_attribute_value("clientToken")
+            if @token_pool.has_key?(token)
+              @token_pool[token].cancel
+              @token_pool.delete(token)
+              if type.eql?("accepted")
+                do_accepted(message, action.to_sym, type, token)
+              else
+                @token_callback.delete(token)
+              end
+              decresase_task_count(action.to_sym)
+            end
+          elsif %w(delta).include?(action)
+            do_delta(message)
+          end
+        }
       end
 
       def do_accepted(message, action, type, token)
