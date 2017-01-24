@@ -68,12 +68,12 @@ module AwsIotDevice
         @client.disconnect
       end
 
-      def publish(topic, payload="", qos=0, retain=nil)
+      def publish(topic, payload="", retain=nil, qos=0)
         if topic.nil?
           raise "publish error: topic cannot be nil"
         end
         @mutex_publish.synchronize {
-          @client.publish(topic,payload, qos, retain)
+          @client.publish(topic, payload, retain, qos)
         }
       end
 
