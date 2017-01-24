@@ -5,7 +5,6 @@ require 'aws_iot_device/mqtt_shadow_client/shadow_action_manager'
 module AwsIotDevice
   module MqttShadowClient
     class ShadowClient
-      attr_accessor :action_manager
 
       def initialize(*args)
         @mqtt_client = MqttManager.new(*args)
@@ -22,13 +21,8 @@ module AwsIotDevice
         end
       end
 
-      def topic_manager(shadow_name)
-        @topic_manager = ShadowTopicManager.new(@mqtt_client, shadow_name)
-      end
-
       def create_shadow_handler_with_name(shadow_name, is_persistent_subscribe=false)
-        topic_manager(shadow_name)
-        @action_manager = ShadowActionManager.new(shadow_name, @topic_manager, is_persistent_subscribe)
+        @action_manager = ShadowActionManager.new(shadow_name, @mqtt_client, is_persistent_subscribe)
       end
 
       def get_shadow(timeout=5, callback=nil, &block)
