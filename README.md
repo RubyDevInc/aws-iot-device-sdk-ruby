@@ -166,8 +166,24 @@ shadow_client.remove_delete_callback
 shadow_client.remove_delta_callback
 ```
 
-
 ### MQTT Adapter
+The `aws-iot-device` gem is based on a MQTT client that enables the usage of basic MQTT operations. This features enable to subscribe and publish to standard MQTT topics.
+```ruby
+mqtt_client = AwsIoTDevice::MqttShadowClient::MqttManager.new
+
+mqtt_client.config_endpoint(host, port)
+mqtt_client.config_ssl_context(host, port)
+mqtt_client.connect
+
+mqtt_client.subscribe(topic, qos, callback)
+mqtt_client.publish(topic, "Hello world!", qos, retain)
+
+mqtt_client.unsubscribe(topic)
+mqtt_client.disconnect
+```
+For the default paho mqtt_client, some callbacks are available for each event related with the MQTT protocol. We recoommend to read the `paho-mqtt` [gem page](https://github.com/RubyDevInc/paho.mqtt.ruby#handlers-and-callbacks).
+
+
 ### Connection mode
 
 ## License
