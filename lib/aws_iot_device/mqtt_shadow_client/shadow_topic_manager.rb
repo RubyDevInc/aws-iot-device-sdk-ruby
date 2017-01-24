@@ -28,7 +28,7 @@ module AwsIotDevice
           if @topic.is_delta?(action)
             @mqtt_manager.subscribe(@topic.get_topic_delta, 0, callback)
           else
-           @mqtt_manager.subscribe_bunch([@topic.get_topic_accepted(action), 0, callback], [@topic.get_topic_rejected(action), 0, callback])
+            @mqtt_manager.subscribe_bunch([@topic.get_topic_accepted(action), 1, callback], [@topic.get_topic_rejected(action), 1, callback])
           end
         }
       end
