@@ -5,7 +5,7 @@ module AwsIotDevice
     class PahoMqttAdapter
 
       def initialize(*args)
-        @client = PahoMqtt::Client.new(args[0])
+        @client = PahoMqtt::Client.new(*args)
       end
 
       def client_id
