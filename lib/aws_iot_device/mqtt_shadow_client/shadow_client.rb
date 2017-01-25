@@ -7,11 +7,22 @@ module AwsIotDevice
     class ShadowClient
 
       def initialize(*args)
-        @mqtt_client = MqttManager.new(*args)
+        unless args.last.nil?
+          shadow_attr = args.last.dup
+          shadow_attr.keep_if {|key, value| key == :shadow_name || key == :persistent_subscribe || key == :logger }
+          mqtt_attr = args.last
+          mqtt_attr.delete_if {|key, value| key == :shadow_name || key == :persistent_subscribe || key == :logger }
+          @mqtt_client = MqttManager.new(mqtt_attr)
+          shadow_attr[:persistent_subscribe] ||= false
+          create_shadow_handler_with_name(shadow_attr[:shadow_name], shadow_attr[:persistent_subsrcibe]) if shadow_attr.has_key?(:shadow_name)
+        else
+          @mqtt_client = MqttManager.new
+        end
       end
 
       def connect(*args, &block)
         @mqtt_client.connect(*args)
+        self.logger.info("Connected to the AWS IoT platform") if logger?
         if block_given?
           begin
             yield(self)
@@ -23,6 +34,21 @@ module AwsIotDevice
 
       def create_shadow_handler_with_name(shadow_name, is_persistent_subscribe=false)
         @action_manager = ShadowActionManager.new(shadow_name, @mqtt_client, is_persistent_subscribe)
+      end
+
+      def logger=(logger_path)
+        file = File.open(logger_path, "a+")
+        log_file = Logger.new(file)
+        log_file.level = Logger::DEBUG
+        @action_manager.logger = log_file
+      end
+
+      def logger
+        @action_manager.logger
+      end
+
+      def logger?
+        @action_manager.logger?
       end
 
       def get_shadow(timeout=5, callback=nil, &block)

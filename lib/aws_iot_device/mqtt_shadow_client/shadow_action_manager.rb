@@ -13,6 +13,8 @@ module AwsIotDevice
       ### It enables the time control the time out after an action have been start
       ### Actions requests are send on the general actions topic and answer is retreived from accepted/refused/delta topics
 
+      attr_accessor :logger
+
       def initialize(shadow_name, mqtt_client, persistent_subscribe=false)
         @shadow_name = shadow_name
         @topic_manager = ShadowTopicManager.new(mqtt_client, shadow_name)
@@ -111,6 +113,9 @@ module AwsIotDevice
         @topic_manager.shadow_topic_unsubscribe("delta")
       end
 
+      def logger?
+        !@logger.nil? && @logger.is_a?(Logger)
+      end
 
       private
 
@@ -144,7 +149,7 @@ module AwsIotDevice
           action = action_name.to_sym
           @token_pool.delete(token)
           @token_callback.delete(token)
-          puts "The #{action_name} request with the token #{token} has timed out!\n"
+          @logger.warn("The #{action_name} request with the token #{token} has timed out!\n") if logger?
           @task_count_mutex.synchronize {
             @topic_subscribed_task_count[action] -= 1
             unless @topic_subscribed_task_count[action] <= 0
@@ -227,21 +232,22 @@ module AwsIotDevice
             @token_pool[token].cancel
             @token_pool.delete(token)
             if type.eql?("accepted")
-              do_accepted(message, action.to_sym, type, token, new_version)
+              do_accepted(message, action.to_sym, token, type, new_version)
             else
-              @token_callback.delete(token)
+              do_rejected(token, action, new_version)
             end
             @task_count_mutex.synchronize {
               decresase_task_count(action.to_sym)
             }
           end
         elsif %w(delta).include?(action)
-          do_delta(message)
+          do_delta(message, new_version)
         end
       end
 
-      def do_accepted(message, action, type, token, new_version)
+      def do_accepted(message, action, token, type, new_version)
         if new_version && new_version >= @last_stable_version
+          @logger.info("The #{action} action with the token #{token} have been accepted.") if logger?
           type.eql?("delete") ? @last_stable_version = -1 : @last_stable_version = new_version
           Thread.new do
             @topic_subscribed_callback[action].call(message)  unless @topic_subscribed_callback[action].nil?
@@ -249,17 +255,26 @@ module AwsIotDevice
             @token_callback.delete(token)
           end
         else
-          puts "CATCH AN UPDATE BUT OUTDATED/INVALID VERSION (= #{new_version})\n"
+          @logger.warn("CATCH AN ACCEPTED #{action} BUT OUTDATED/INVALID VERSION (= #{new_version})\n") if logger?
         end
       end
 
-      def do_delta(message)
-        new_version = @payload_parser.get_attribute_value("version")
+      def do_rejected(token, action, new_version)
         if new_version && new_version >= @last_stable_version
+          @logger.info("The #{action} action with the token #{token} have been rejected.") if logger?
+          @token_callback.delete(token)
+        else
+          @logger.warn("CATCH AN REJECTED #{action} BUT OUTDATED/INVALID VERSION (= #{new_version})\n") if logger?
+        end
+      end
+
+      def do_delta(message, new_version)
+        if new_version && new_version >= @last_stable_version
+          @logger.info("A delta action have been accepted.") if logger?
           @last_stable_version = new_version
           Thread.new { @topic_subscribed_callback[:delta].call(message) } unless @topic_subscribed_callback[:delta].nil?
         else
-          puts "CATCH A DELTA BUT OUTDATED/INVALID VERSION (= #{new_version})\n"
+          @logger.warn("CATCH A DELTA BUT OUTDATED/INVALID VERSION (= #{new_version})\n") if logger?
         end
       end
 
