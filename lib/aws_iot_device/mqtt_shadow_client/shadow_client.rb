@@ -26,8 +26,8 @@ module AwsIotDevice
         end
       end
 
-      def create_shadow_handler_with_name(shadow_name, is_persistent_subscribe=false)
-        @action_manager = ShadowActionManager.new(shadow_name, @mqtt_client, is_persistent_subscribe)
+      def create_shadow_handler_with_name(shadow_name, persistent_subscribe=false)
+        @action_manager = ShadowActionManager.new(shadow_name, @mqtt_client, persistent_subscribe)
       end
 
       def logger=(logger_path)

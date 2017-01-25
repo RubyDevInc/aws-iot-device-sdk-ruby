@@ -1,4 +1,4 @@
-A<a href="https://codeclimate.com/repos/57d10b3aaee68e0a2d0016b7/feed"><img src="https://codeclimate.com/repos/57d10b3aaee68e0a2d0016b7/badges/aad862afb3ada6425b90/gpa.svg" /></a>
+<a href="https://codeclimate.com/repos/57d10b3aaee68e0a2d0016b7/feed"><img src="https://codeclimate.com/repos/57d10b3aaee68e0a2d0016b7/badges/aad862afb3ada6425b90/gpa.svg" /></a>
 [![Dependency Status](https://gemnasium.com/badges/github.com/RubyDevInc/aws-iot-device-sdk-ruby.svg)](https://gemnasium.com/github.com/RubyDevInc/aws-iot-device-sdk-ruby)
 [![Gem Version](https://badge.fury.io/rb/aws_iot_device.svg)](https://badge.fury.io/rb/aws_iot_device)
 
@@ -28,10 +28,10 @@ Ruby gems:
 - paho-mqtt >= 0.0.2
 
 ## Overview
-`aws_iot_device` is a gem that enables a remote client to communicate with the AWS IoT platform. The AWS IoT platform allows to register a device as a `thing`, each `thing` is referred by a `shadow` that stores the `thing` (device) status. The gem uses the MQTT protocol to control the `thing` registered on the AWS IoT platform. The MQTT protocol is a lightweight protocol used to exchange short messages between a client and a message broker. The message broker is located on the AWS IoT platform, and the client is provided by the `aws_iot_device` gem, the default client is the `paho-mqtt`. The `paho-mqtt` client has a MQTT API and a callback system to handle the events trigger by the mqtt packages.
+`aws_iot_device` is a gem that enables a remote client to communicate with the AWS IoT platform. The AWS IoT platform allows to register a device as a `thing`. The status of each `thing` is stored in a json format, referred as the `shadow` of a `thing`. The SDK uses the MQTT protocol to control the `thing` registered on the AWS IoT platform. The MQTT protocol is a lightweight protocol used to exchange short messages between a client and a message broker. The message broker is located on the AWS IoT platform, and the client is included in the `aws_iot_device` gem, the default client is the `paho-mqtt`. The `paho-mqtt` client has a MQTT API and a callback system to handle the events trigger by the mqtt packages.
 
 ## Installation
-The gem is currentely in a unstable version, key features are available but any improvements is welcomed :).  
+The gem is currentely in its first version, key features are available but any improvements is welcomed.  
 There are two ways to install the gem, from [rubygems](https://rubygems.org/gems/aws_iot_device) or directly from [sources](https://github.com/RubyDevInc/aws-iot-device-sdk-ruby).
 - From RubyGems:  
 The gem may be find on [RubyGems](https://rubygems.org/gems/aws_iot_device) and installed with the following command:
@@ -79,18 +79,20 @@ shadow_client.disconnect
 ```
 
 ### Sample files
-Once you have cloned that repository the several samples files provide test on the API a multiple levels.
+Once you have cloned the current repository the several samples files provide test on the API a multiple levels.
 The shadow examples could be run with the following command :
 ```
 ruby samples/shadow_client_samples/samples_shadow_client_xxx.rb -c "CERTIFICATE PATH" -k "PRIVATE KEY PATH"  -a "CA CERTIFICATE PATH" -H "AWS IOT ENDPOINT" -t "THING NAME"
 ```
 
 ## API Description
-Thank you very much for your interst in the `aws_iot_device` gem. The following part details all the features available with this gem.
+Thank you very much for your interst in the `aws_iot_device` gem. The following part details all the features available with the SDK.
+
 ### Shadow Client
-The shadow client API provide the key functions which are needed to control a thing/shadow on the Aws IoT platform. The methods contains in the API could be seperate in three differents roles, the configuration roles, the communication roles, and the treatements roles.
+The shadow client API provide the key functions to control a thing/shadow on the Aws IoT platform. The methods contain in the API could be seperate in three differents roles, the configuration roles, the communication roles, and the treatements roles.
+
 #### Configuration role
-The Shadow client initializer would create the mqtt client that the shadow client uses to communicate with the remote host. The parameters available on the initialization depend on the type of the mqtt client. The default mqtt client type is the paho_client, the available parameter are detailed in `paho-mqtt` gem [page](https://github.com/RubyDevInc/paho.mqtt.ruby#initialization).
+The Shadow client initializer would create the mqtt client used by the shadow client to communicate with the remote host. The parameters available on the initialization depend on the type of the chosen mqtt client. The default mqtt client type is the paho_client, the availables parameters are detailed in `paho-mqtt` gem [page](https://github.com/RubyDevInc/paho.mqtt.ruby#initialization).
 
 The remote host(endpoint) and port could be configured with the following method:
 ```
@@ -114,7 +116,7 @@ shadow_client.connect
 ```
 
 #### Communication role
-In the API there is three method that directely act on the remote shadow. `timeout` is the time until which the request should be consider as a failure. The default timeout is five second. The `get` and `delete` do not accept a payload where it is mandaory for the `update`. 
+In the API there are three methods that directely act on the remote shadow. A `timeout` define the time until which the request should be considered as a failure. The default timeout is five second. The `get` and `delete` do not accept a payload where a json format payload is mandatory for the `update` action. 
 ```
 timeout = 2
 
@@ -127,8 +129,9 @@ shadow_client.delete_shadow
 ```
 
 #### Callbacks
-Callbacks are small piece of code that would be execute when the answer of one action is received by the client. The callbacks may be register as `block`, `proc` or `lambda`.  
-The Shadow client API enables to register two kind of callbacks, one for generic action, and another one for specific action. The generic action callback would be call on every answer of the dicated action, whereas the specific action callback would be execute only on the answer to the action call which had triggered it. The followings lines provide an examples of the callbacks usage.
+Callbacks are small piece of code that would be executed when the answer of one action is received by the client. The Shadow client API enables to register two kind of callbacks, a generic callback and single usage callback.
+For generic action (get, update, delete), the callback would be executed on every answer of the dedicated generic action. Futhermore, another callback may be executed for a single answer of a dedicated action. The generic callback could be seen as re-usable callback functions when the single usage could be seen as disposable treatment.
+Both kind of callbacks must be registered as a `block`, a `proc` or a `lambda`. The followings lines provide an examples of the different callbacks usage.
 ```ruby
 # Register a callback for the get action as a block
 shadow_client.register_get_callback do
@@ -165,21 +168,24 @@ shadow_client.remove_delta_callback
 ```
 
 ### Client persitences
-For performance issues, sometimes subscriptions and (re)connection time would better to saved. This could be done with two different persistences, the subscription persistence and the connection persistence. The subscription persistence keeps the shadow_client subscribed to action topics (get/accepted, get/rejected, update/accepted, update/rejected, delete/accepted and delete/rejected). The subscription process require a short time, the persistent subscription avoid to susbscribe before each and so saved the subscription time. The subscription persistence could be set at the initialization of the shadow handler.
+For performance issues, sometimes subscriptions and (re)connection time would better to saved. This could be done with two different persistences, the subscription persistence and the connection persistence. The subscription persistence keeps the shadow_client subscribed to action topics (get/accepted, get/rejected, update/accepted, update/rejected, delete/accepted and delete/rejected). The subscription process require a short time, the persistent subscription avoid to susbscribe before each and so saved the subscription time. The subscription persistence could be set at the initialization of the shadow handler or directely at the shadow client initialization.
 ```ruby
-shadow_client.create_shadow_handler_with_name(shadow_name, is_persistent_subscribe)
+shadow_client = AwsIotDevice::MqttShadowClient::ShadowClient.new({:shadow_name => "Thing name", :persistent_subscribe => true})
+# Or
+shadow_client.create_shadow_handler_with_name(shadow_name, persistent_subscribe)
 ```
-
-The connection persistence enables the client to keep the mqtt connection alive until the client explicitly requests to disconnect. The basic client would disconnect from the remote host if no activity has been detected for a prest keep_alive timer. There is two ways to configure the connection persistence, at the initialization of the shadow client or at the connection time.
+The default subscription persistence if desactivated, so the client might subscribe/unsubscribe to reserved topics before/after every actions.  
+  
+The connection persistence enables the client to keep the mqtt connection alive until the client explicitly requests to disconnect. The basic client would disconnect from the remote host if no activity has been detected for a preset keep_alive timer. There is two ways to configure the connection persistence, at the initialization of the shadow client or at the connection time.
 ```ruby
-shadow_client = AwsIotDevice::ShadowClient.new({:persistent => true})
+shadow_client = AwsIotDevice::MqttShadowClient::ShadowClient.new({:persistent => true})
 # Or
 shadow_client.connect({:persitent => true})
 ```
 
 
 ### MQTT Adapter
-The `aws-iot-device` gem is based on a MQTT client (`paho-mqtt`) that enables the usage of basic MQTT operations. Among this features, the most popular one is the subscription and publishing to standard MQTT topics.
+The `aws-iot-device` gem is based on a MQTT client (`paho-mqtt`) that enables the usage of basic MQTT operations.  
 ```ruby
 mqtt_client = AwsIoTDevice::MqttShadowClient::MqttManager.new
 
@@ -193,7 +199,9 @@ mqtt_client.publish(topic, "Hello world!", qos, retain)
 mqtt_client.unsubscribe(topic)
 mqtt_client.disconnect
 ```
-For the default paho mqtt_client, some callbacks are available for each event related with the MQTT protocol. We recommend to read the `paho-mqtt` [gem page](https://github.com/RubyDevInc/paho.mqtt.ruby#handlers-and-callbacks) for more etails about the mqtt callbacks usage.
+For the default paho mqtt_client, some callbacks are available for each event related with the MQTT protocol. We recommend to read the `paho-mqtt` [gem page](https://github.com/RubyDevInc/paho.mqtt.ruby#handlers-and-callbacks) for more details about the mqtt callbacks usage.
 
 ## License
+This SDK is distributed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
+
 ## Contact
