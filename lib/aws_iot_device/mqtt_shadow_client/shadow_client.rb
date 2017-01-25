@@ -8,13 +8,7 @@ module AwsIotDevice
 
       def initialize(*args)
         unless args.last.nil?
-          shadow_attr = args.last.dup
-          shadow_attr.keep_if {|key, value| key == :shadow_name || key == :persistent_subscribe || key == :logger }
-          mqtt_attr = args.last
-          mqtt_attr.delete_if {|key, value| key == :shadow_name || key == :persistent_subscribe || key == :logger }
-          @mqtt_client = MqttManager.new(mqtt_attr)
-          shadow_attr[:persistent_subscribe] ||= false
-          create_shadow_handler_with_name(shadow_attr[:shadow_name], shadow_attr[:persistent_subsrcibe]) if shadow_attr.has_key?(:shadow_name)
+          config_attr(args.last)
         else
           @mqtt_client = MqttManager.new
         end
@@ -105,6 +99,19 @@ module AwsIotDevice
 
       def configure_credentials(ca_file, key, cert)
         @mqtt_client.config_ssl_context(ca_file, key, cert)
+      end
+
+
+      private
+
+      def config_attr(args)
+        shadow_attr = args.dup
+        shadow_attr.keep_if {|key| key == :shadow_name || key == :persistent_subscribe || key == :logger }
+        mqtt_attr = args        
+        mqtt_attr.delete_if {|key| key == :shadow_name || key == :persistent_subscribe || key == :logger }
+        @mqtt_client = MqttManager.new(mqtt_attr)
+        shadow_attr[:persistent_subscribe] ||= false
+        @action_manager = create_shadow_handler_with_name(shadow_attr[:shadow_name], shadow_attr[:persistent_subsrcibe]) if shadow_attr.has_key?(:shadow_name)
       end
     end
   end

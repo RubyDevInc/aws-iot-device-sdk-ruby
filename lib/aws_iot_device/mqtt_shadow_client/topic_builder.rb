@@ -1,8 +1,6 @@
 module AwsIotDevice
   module MqttShadowClient
     class TopicBuilder
-      ACTION_NAME = %w(get update delete delta).freeze
-
       def initialize(shadow_name)
         raise ArgumentError, "topic_builder initialization, shadow_name is required but undefined" if shadow_name.nil?
         

@@ -167,12 +167,12 @@ module AwsIotDevice
         @default_callback = proc { |message| do_message_callback(message) }
 
         @topic_manager.on_suback = lambda do |topics|
-          action = retrieve_action(topics[0])
+          action = @topic_manager.retrieve_action(topics[0])
           @is_subscribed[action] ||= true unless action.nil?
         end
 
         @topic_manager.on_unsuback = lambda do |topics|
-          action = retrive_action(topics)
+          action = @topic_manager.retrieve_action(topics[0])
           @is_subscribed[action] = false if action.nil?
         end
       end
@@ -250,13 +250,17 @@ module AwsIotDevice
           @logger.info("The #{action} action with the token #{token} have been accepted.") if logger?
           type.eql?("delete") ? @last_stable_version = -1 : @last_stable_version = new_version
           Thread.new do
-            @topic_subscribed_callback[action].call(message)  unless @topic_subscribed_callback[action].nil?
-            @token_callback[token].call(message) if @token_callback.has_key?(token)
-            @token_callback.delete(token)
+            accepted_tasks(message, action, token)
           end
         else
           @logger.warn("CATCH AN ACCEPTED #{action} BUT OUTDATED/INVALID VERSION (= #{new_version})\n") if logger?
         end
+      end
+
+      def accepted_tasks(message, action, token)
+        @topic_subscribed_callback[action].call(message)  unless @topic_subscribed_callback[action].nil?
+        @token_callback[token].call(message) if @token_callback.has_key?(token)
+        @token_callback.delete(token)
       end
 
       def do_rejected(token, action, new_version)
@@ -292,20 +296,6 @@ module AwsIotDevice
 
       def handle_timeout(ref)
         Time.now <= ref
-      end
-
-      def retrieve_action(topics)
-        actions = { :get => '/shadow/get/accepted',
-                    :update => '/shadow/update/accepted',
-                    :delete => '/shadow/delete/accepted' }
-        res = nil
-        actions.each_pair do |action, filter|
-          if topics[0] == '$aws/things/' + @shadow_name + filter
-            res = action
-            break
-          end
-        end
-        res
       end
 
       def parse_shadow_name(topic)

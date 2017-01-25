@@ -40,10 +40,21 @@ module AwsIotDevice
         }
       end
 
+      def retrieve_action(topic)
+        res = nil
+        for i in [0, 1, 2] do
+          if topic == @topic.get_topic_accepted(ACTION_NAME[i])
+            res = ACTION_NAME[i].to_sym
+            break
+          end
+        end
+        res
+      end
+
       def paho_client?
         @mqtt_manager.paho_client?
       end
-      
+
       def on_suback=(callback)
         @mqtt_manager.on_suback = callback
       end
