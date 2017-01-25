@@ -58,8 +58,7 @@ def setting_topic_manager(mqtt_client)
 end
 
 def setting_action_manager(mqtt_client)
-  topic_manager = setting_topic_manager(mqtt_client)
-  action_manager = AwsIotDevice::MqttShadowClient::ShadowActionManager.new(@thing, topic_manager, false)
+  action_manager = AwsIotDevice::MqttShadowClient::ShadowActionManager.new(@thing, mqtt_client, false)
   action_manager
 end
 

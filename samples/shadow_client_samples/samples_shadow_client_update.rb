@@ -17,7 +17,7 @@ my_shadow_client.register_delta_callback(delta_callback)
 
 n = 1
 3.times do
-  puts "Type the message that you want to register in the thing [#{thing}]:"
+  puts "Type the message that you want to register in the thing:"
   entry = $stdin.readline()
   json_payload = "{\"state\":{\"desired\":{\"message\":\"#{entry.delete!("\n")}\"}}}"
   my_shadow_client.update_shadow(json_payload, 5, filter_callback)
