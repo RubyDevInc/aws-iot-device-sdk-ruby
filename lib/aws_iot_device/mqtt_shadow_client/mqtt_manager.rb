@@ -45,9 +45,7 @@ module AwsIotDevice
       end
 
       def config_endpoint(host, port)
-        if host.nil? || port.nil?
-          raise "config_endpoint error: either host || port is undefined"
-        end
+        raise ArgumentError, "configure endpoint either host or port is nil" if host.nil? || port.nil?
         @client.host = host
         @client.port = port
       end
@@ -69,18 +67,14 @@ module AwsIotDevice
       end
 
       def publish(topic, payload="", retain=nil, qos=0)
-        if topic.nil?
-          raise "publish error: topic cannot be nil"
-        end
+        raise ArgumentError, "publish topic cannot be nil" if topic.nil?
         @mutex_publish.synchronize {
           @client.publish(topic, payload, retain, qos)
         }
       end
 
       def subscribe(topic, qos=0, callback=nil)
-        if topic.nil?
-          raise "subscribe error: topic cannot be nil"
-        end
+        raise ArgumentError, "subscribe topic cannot be nil" if topic.nil?
         @mutex_subscribe.synchronize {
           @client.add_callback_filter_topic(topic, callback)
           @client.subscribe(topic, qos)
@@ -97,9 +91,7 @@ module AwsIotDevice
       end
       
       def unsubscribe(topic)
-        if topic.nil?
-          raise "unsubscribe error: topic cannot be nil"
-        end
+        raise ArgumentError, "unsubscribe topic cannot be nil" if topic.nil?
         @mutex_unsubscribe.synchronize{
           @client.remove_callback_filter_topic(topic)
           @client.unsubscribe(topic)

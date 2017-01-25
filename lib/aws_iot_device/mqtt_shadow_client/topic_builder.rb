@@ -1,12 +1,8 @@
 module AwsIotDevice
   module MqttShadowClient
     class TopicBuilder
-      ACTION_NAME = %w(get update delete delta).freeze
-
       def initialize(shadow_name)
-        if shadow_name.nil?
-          raise "shadow_name_error: shadow_name is required but undefined"
-        end
+        raise ArgumentError, "topic_builder initialization, shadow_name is required but undefined" if shadow_name.nil?
         
         @shadow_name = shadow_name
         
@@ -19,9 +15,7 @@ module AwsIotDevice
       end
 
       def get_topic_general(action)
-        unless ACTION_NAME.include?(action)
-          raise "action_name_error: unreconized action_name \"#{action}\""
-        end
+        raise ArgumentError, "topic_builder, get topic, unreconized action_name \"#{action}\"" unless ACTION_NAME.include?(action)
         @topic_general + action
       end
 

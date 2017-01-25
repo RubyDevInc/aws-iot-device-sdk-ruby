@@ -16,10 +16,10 @@ module AwsIotDevice
         if args.last.is_a?(Hash)
           attr = args.last
           attr.each_pair do |k, v|
-            if [ :host, :port, :keep_alive, :persistent, :blocking ].include?(k)
+            if [:host, :port, :keep_alive, :persistent].include?(k)
               @client.send("#{k}=", v)
             else
-              raise "Parameter error, invalid paramater \"#{k}\" for connect with paho-mqtt"
+              raise ArgumentError, "Parameter error, invalid paramater \"#{k}\" for connect with paho-mqtt"
             end
           end
         end

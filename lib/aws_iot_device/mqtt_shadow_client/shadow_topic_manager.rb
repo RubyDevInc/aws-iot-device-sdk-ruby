@@ -5,17 +5,13 @@ module AwsIotDevice
     class ShadowTopicManager
 
       def initialize(mqtt_manager, shadow_name)
-        if mqtt_manager.nil?
-          raise "TopicAction_error: TopicAction should be initialized with a mqtt_manager but was undefined"
-        end
+        raise ArgumentError, "topic manager should be initialized with a mqtt_manager but was undefined" if mqtt_manager.nil?
+        raise ArgumentError, "topic manager should be initialize with a mqtt mmanager but was undefined" if shadow_name.nil?
 
-        if shadow_name.nil?
-          raise "TopicAction_error: shadow name is required for TopicBuilder"
-        end
         @mqtt_manager = mqtt_manager
         @sub_unsub_mutex = Mutex.new()
         @topic = TopicBuilder.new(shadow_name)
-        @timeout = @mqtt_manager.mqtt_operation_timeout_s
+        @timeout = mqtt_manager.mqtt_operation_timeout_s
       end
 
       def shadow_topic_publish(action, payload)
@@ -44,10 +40,21 @@ module AwsIotDevice
         }
       end
 
+      def retrieve_action(topic)
+        res = nil
+        ACTION_NAME.each do |action|
+          if topic[0] == @topic.get_topic_accepted(action)
+            res = action.to_sym
+            break
+          end
+        end
+        res
+      end
+
       def paho_client?
         @mqtt_manager.paho_client?
       end
-      
+
       def on_suback=(callback)
         @mqtt_manager.on_suback = callback
       end
