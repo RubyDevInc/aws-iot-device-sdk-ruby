@@ -42,9 +42,9 @@ module AwsIotDevice
 
       def retrieve_action(topic)
         res = nil
-        for i in [0, 1, 2] do
-          if topic == @topic.get_topic_accepted(ACTION_NAME[i])
-            res = ACTION_NAME[i].to_sym
+        ACTION_NAME.each do |action|
+          if topic[0] == @topic.get_topic_accepted(action)
+            res = action.to_sym
             break
           end
         end
