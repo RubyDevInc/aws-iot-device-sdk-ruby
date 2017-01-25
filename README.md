@@ -199,7 +199,7 @@ mqtt_client.publish(topic, "Hello world!", qos, retain)
 mqtt_client.unsubscribe(topic)
 mqtt_client.disconnect
 ```
-For the default paho mqtt_client, some callbacks are available for each event related with the MQTT protocol. We recommend to read the `paho-mqtt` [gem page](https://github.com/RubyDevInc/paho.mqtt.ruby#handlers-and-callbacks) for more etails about the mqtt callbacks usage.
+For the default paho mqtt_client, some callbacks are available for each event related with the MQTT protocol. We recommend to read the `paho-mqtt` [gem page](https://github.com/RubyDevInc/paho.mqtt.ruby#handlers-and-callbacks) for more details about the mqtt callbacks usage.
 
 ## License
 This SDK is distributed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).

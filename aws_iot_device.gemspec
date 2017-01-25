@@ -9,8 +9,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Pierre Goudet"]
   spec.email         = ["p-goudet@ruby-dev.jp"]
 
-  spec.summary       = %q{A gem use to communicates with the Aws Iot platform through the MQTT protocol}
-  spec.description   = %q{A gem use to communicates with the Aws Iot platform through the MQTT protocol}
+  spec.summary       = %q{The ruby version of the AWS IoT Device SDK. It enables to connect to AWS IoT platform and manage Things.}
+  spec.description   = %q{The gem is using the MQTT protocol to execute the command defined by the AWS IoT platform. A default MQTT client is included in the gem, however an adapter system enables to plug another MQTT client.}
   spec.homepage      = "https://github.com/RubyDevInc/aws-iot-device-sdk-ruby"
   spec.license       = "Apache-2.0"
 
@@ -34,6 +34,6 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency "facets", "~> 3.1.0", ">= 3.1.0"
   spec.add_runtime_dependency "json", "~> 2.0.2", ">= 2.0.2"
-  spec.add_runtime_dependency "mqtt", "~> 0.4.0", ">= 0.4.0"
+  spec.add_runtime_dependency "paho-mqtt", "~> 0.0.2", ">= 0.0.2"
   spec.add_runtime_dependency "timers", "~> 4.1.1", ">= 4.1.1"
 end
