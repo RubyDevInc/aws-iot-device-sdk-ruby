@@ -1,8 +1,6 @@
-<a href="https://codeclimate.com/repos/57d10b3aaee68e0a2d0016b7/feed"><img src="https://codeclimate.com/repos/57d10b3aaee68e0a2d0016b7/badges/aad862afb3ada6425b90/gpa.svg" /></a>
+A<a href="https://codeclimate.com/repos/57d10b3aaee68e0a2d0016b7/feed"><img src="https://codeclimate.com/repos/57d10b3aaee68e0a2d0016b7/badges/aad862afb3ada6425b90/gpa.svg" /></a>
 [![Dependency Status](https://gemnasium.com/badges/github.com/RubyDevInc/aws-iot-device-sdk-ruby.svg)](https://gemnasium.com/github.com/RubyDevInc/aws-iot-device-sdk-ruby)
 [![Gem Version](https://badge.fury.io/rb/aws_iot_device.svg)](https://badge.fury.io/rb/aws_iot_device)
-
-
 
 # AWS IoT Device SDK for Ruby
 
@@ -172,7 +170,7 @@ For performance issues, sometimes subscriptions and (re)connection time would be
 shadow_client.create_shadow_handler_with_name(shadow_name, is_persistent_subscribe)
 ```
 
-The connction persistence enables the client to keep the mqtt connection alive until the client explicitly requests to disconnect. The basic client would disconnect from the remote host if no activity has been detected for a prest keep_alive timer. There is two ways to configure the connection persistence, at the initialization of the shadow client or at the connection time.
+The connection persistence enables the client to keep the mqtt connection alive until the client explicitly requests to disconnect. The basic client would disconnect from the remote host if no activity has been detected for a prest keep_alive timer. There is two ways to configure the connection persistence, at the initialization of the shadow client or at the connection time.
 ```ruby
 shadow_client = AwsIotDevice::ShadowClient.new({:persistent => true})
 # Or
@@ -180,9 +178,8 @@ shadow_client.connect({:persitent => true})
 ```
 
 
-
 ### MQTT Adapter
-The `aws-iot-device` gem is based on a MQTT client that enables the usage of basic MQTT operations. This features enable to subscribe and publish to standard MQTT topics.
+The `aws-iot-device` gem is based on a MQTT client (`paho-mqtt`) that enables the usage of basic MQTT operations. Among this features, the most popular one is the subscription and publishing to standard MQTT topics.
 ```ruby
 mqtt_client = AwsIoTDevice::MqttShadowClient::MqttManager.new
 
@@ -196,7 +193,7 @@ mqtt_client.publish(topic, "Hello world!", qos, retain)
 mqtt_client.unsubscribe(topic)
 mqtt_client.disconnect
 ```
-For the default paho mqtt_client, some callbacks are available for each event related with the MQTT protocol. We recommend to read the `paho-mqtt` [gem page](https://github.com/RubyDevInc/paho.mqtt.ruby#handlers-and-callbacks).
+For the default paho mqtt_client, some callbacks are available for each event related with the MQTT protocol. We recommend to read the `paho-mqtt` [gem page](https://github.com/RubyDevInc/paho.mqtt.ruby#handlers-and-callbacks) for more etails about the mqtt callbacks usage.
 
 ## License
 ## Contact
