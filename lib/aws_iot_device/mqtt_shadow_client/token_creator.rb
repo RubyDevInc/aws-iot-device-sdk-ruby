@@ -11,7 +11,7 @@ module AwsIotDevice
       ### When token time run out or the actions have been treated token should deleted.
 
       def initialize(shadow_name, client_id)
-        @shadow_name = shadow_name
+        @shadow_name = shadow_name[0..15]
         @client_id = client_id
         @sequence_number = 0
       end
