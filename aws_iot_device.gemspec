@@ -32,7 +32,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake", "~> 10.0", ">= 1.10" 
   spec.add_development_dependency "rspec", "~> 3.5.0", ">= 3.5.0"
 
-  spec.add_runtime_dependency "facets", "~> 3.1.0", ">= 3.1.0"
+  #spec.add_runtime_dependency "facets", "~> 3.1.0", ">= 3.1.0"
   spec.add_runtime_dependency "json", "~> 2.0.2", ">= 2.0.2"
   spec.add_runtime_dependency "paho-mqtt", "~> 1.0.0", ">= 1.0.0"
   spec.add_runtime_dependency "timers", "~> 4.1.1", ">= 4.1.1"
