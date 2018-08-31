@@ -187,10 +187,10 @@ shadow_client.connect({:persitent => true})
 ### MQTT Adapter
 The `aws-iot-device` gem is based on a MQTT client (`paho-mqtt`) that enables the usage of basic MQTT operations.  
 ```ruby
-mqtt_client = AwsIoTDevice::MqttShadowClient::MqttManager.new
+mqtt_client = AwsIotDevice::MqttShadowClient::MqttManager.new
 
 mqtt_client.config_endpoint(host, port)
-mqtt_client.config_ssl_context(host, port)
+mqtt_client.config_ssl_context(ca_file, key_file, cert_file)
 mqtt_client.connect
 
 mqtt_client.subscribe(topic, qos, callback)
